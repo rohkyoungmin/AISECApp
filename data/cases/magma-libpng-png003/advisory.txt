@@ -1,0 +1,1 @@
+Magma libpng bug PNG003 models a palette length validation flaw. In the vulnerable path, png_handle_PLTE can continue processing a PLTE chunk where num exceeds max_palette_length. The fixed path clamps num to max_palette_length before palette entries are copied, preventing an oversized palette from flowing into later processing.

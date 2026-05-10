@@ -68,15 +68,22 @@ class SimplePatchAnalysisAgent:
             root_cause = "Length validation is missing before a copy into a fixed-size buffer."
             fix_intent = "Introduce a guard that rejects oversized input before copying."
             vulnerable_api = "memcpy"
+            evidence_summary = "The patched version adds a size check before copying user-controlled input."
+        elif "max_palette_length" in lower_diff and "png_handle_plte" in lower_diff:
+            root_cause = "Palette length can exceed the maximum palette size before PLTE entries are processed."
+            fix_intent = "Clamp the PLTE entry count to max_palette_length before palette processing continues."
+            vulnerable_api = "palette entry processing"
+            evidence_summary = "The fixed build clamps num to max_palette_length and the canary flags num > max_palette_length."
         else:
             root_cause = "Potential unsafe memory operation identified in the diff."
             fix_intent = "Add validation and safe bounds handling around the changed code path."
             vulnerable_api = None
+            evidence_summary = "The patch changes validation around a potentially unsafe code path."
 
         evidence = [
             Evidence(
                 source="patch_diff",
-                summary="The patched version adds a size check before copying user-controlled input.",
+                summary=evidence_summary,
                 artifact_ref="patch:lines-1-3",
             )
         ]
@@ -102,6 +109,10 @@ class SimpleBinaryMatchAgent:
             function_name = "parse_header"
         if "0x401234" in excerpt:
             address = "0x401234"
+        if "png_handle_plte" in excerpt:
+            function_name = "png_handle_PLTE"
+        if "source:pngrutil.c:984" in excerpt:
+            address = "source:pngrutil.c:984"
         if "memcpy" in excerpt and "input_len" in excerpt:
             confidence = 0.87
             verdict = Verdict.VULNERABLE
@@ -113,6 +124,23 @@ class SimpleBinaryMatchAgent:
                     source="decompiler_excerpt",
                     summary="The function copies attacker-controlled input into a buffer before validation.",
                     artifact_ref="decompiler:parse_header",
+                )
+            )
+        elif (
+            patch.vulnerable_api == "palette entry processing"
+            and "num > max_palette_length" in excerpt
+            and "i < num" in excerpt
+        ):
+            confidence = 0.82
+            verdict = Verdict.VULNERABLE
+            rationale = (
+                "Binary-side evidence shows PLTE entry processing can continue with num greater than max_palette_length."
+            )
+            evidence.append(
+                Evidence(
+                    source="decompiler_excerpt",
+                    summary="The vulnerable PLTE handler processes palette entries using an unclamped attacker-controlled count.",
+                    artifact_ref="decompiler:png_handle_PLTE",
                 )
             )
 

@@ -1,0 +1,7 @@
+png_handle_PLTE @ source:pngrutil.c:984
+max_palette_length = PNG_MAX_PALETTE_LENGTH;
+/* vulnerable build: MAGMA_ENABLE_FIXES is disabled, so num is not clamped */
+MAGMA_LOG("PNG003", num > max_palette_length);
+for (i = 0, pal_ptr = palette; i < num; i++, pal_ptr++) {
+    /* palette entries are processed with attacker-controlled num */
+}

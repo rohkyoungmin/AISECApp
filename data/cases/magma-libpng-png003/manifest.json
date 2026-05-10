@@ -1,0 +1,28 @@
+{
+  "case_id": "magma-libpng-png003",
+  "cve_id": "MAGMA-PNG003",
+  "project": "libpng",
+  "language": "C",
+  "source": {
+    "benchmark": "Magma",
+    "target": "libpng",
+    "bug_id": "PNG003",
+    "patch_path": "external/magma/targets/libpng/patches/bugs/PNG003.patch"
+  },
+  "binary": {
+    "path": "vulnerable/binary",
+    "architecture": "x86_64",
+    "compiler": "magma-default-clang",
+    "optimization": "unknown"
+  },
+  "inputs": {
+    "advisory": "advisory.txt",
+    "patch_diff": "patch.diff",
+    "decompiler_excerpt": "vulnerable/decompiler.txt"
+  },
+  "labels": {
+    "expected_verdict": "vulnerable",
+    "vulnerable_function": "png_handle_PLTE",
+    "vulnerable_address": "source:pngrutil.c:984"
+  }
+}

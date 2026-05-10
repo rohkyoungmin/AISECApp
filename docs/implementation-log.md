@@ -215,3 +215,64 @@ e323228 Initialize AISEC pipeline scaffold
 ```
 
 이후부터는 의미 있는 변경마다 `implementation-log.md` 기록, 테스트, commit, push 순서로 관리한다.
+
+## 2026-05-10 KST - 첫 Magma case 수집 시작
+
+### 이번 작업 목표
+
+사용자가 clone해둔 `external/magma`에서 실제 patch 후보 하나를 골라, 우리 `data/cases/{case_id}/` 포맷으로 변환한다.
+
+### 작업 원칙
+
+- `external/magma` 전체는 외부 소스라 repository에 commit하지 않는다.
+- 필요한 advisory/patch/excerpt만 `data/cases/` 아래로 복사한다.
+- 아직 실제 binary/decompiler build가 없으면 placeholder 또는 source-level excerpt로 시작하고, 이후 build 단계에서 교체한다.
+
+### 선택한 첫 case
+
+- Source: `external/magma/targets/libpng/patches/bugs/PNG003.patch`
+- Case ID: `magma-libpng-png003`
+- Project: `libpng`
+- Function: `png_handle_PLTE`
+- Issue summary: PLTE chunk 처리 중 `num`이 `max_palette_length`를 초과할 수 있으며, fixed path는 `num`을 `max_palette_length`로 clamp한다.
+
+### 구현 결과
+
+추가/변경 파일:
+
+- `.gitignore`
+  - `external/`을 ignore하여 Magma clone 전체가 repository에 들어가지 않게 함
+- `data/cases/magma-libpng-png003/manifest.json`
+- `data/cases/magma-libpng-png003/advisory.txt`
+- `data/cases/magma-libpng-png003/patch.diff`
+- `data/cases/magma-libpng-png003/vulnerable/decompiler.txt`
+- `data/cases/magma-libpng-png003/fixed/decompiler.txt`
+- `data/cases/magma-libpng-png003/vulnerable/binary`
+- `data/cases/magma-libpng-png003/fixed/binary`
+- `src/aisec_app/pipeline.py`
+  - `max_palette_length` / `png_handle_PLTE` 계열 patch와 excerpt를 인식하는 최소 rule 추가
+- `tests/test_dataset.py`
+  - 실제 Magma-derived case가 loader와 pipeline을 통과하는지 검증
+
+### 검증 결과
+
+```bash
+PYTHONPATH=src python3 -m unittest discover -s tests -v
+```
+
+결과:
+
+- 6 tests passed
+- `magma-libpng-png003`가 `vulnerable`, function `png_handle_PLTE`, verifier `pass` 결과를 생성함
+
+CLI 확인:
+
+```bash
+PYTHONPATH=src python3 -m aisec_app.cli data/cases/magma-libpng-png003
+```
+
+### 남은 한계
+
+- 현재 `vulnerable/binary`와 `fixed/binary`는 placeholder이다.
+- `decompiler.txt`는 실제 binary decompile 결과가 아니라 Magma patch를 기준으로 만든 source-level excerpt이다.
+- 다음 단계에서 Magma build를 수행하고 실제 build artifact와 decompiler/static-analysis output으로 교체해야 한다.

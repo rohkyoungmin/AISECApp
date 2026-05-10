@@ -25,7 +25,10 @@ class DatasetTests(unittest.TestCase):
     def test_load_cases_from_root(self) -> None:
         cases = load_cases(CASES_ROOT)
 
-        self.assertEqual([case.case_id for case in cases], ["demo-parse-header"])
+        self.assertEqual(
+            [case.case_id for case in cases],
+            ["demo-parse-header", "magma-libpng-png003"],
+        )
 
     def test_manifest_case_runs_through_pipeline(self) -> None:
         case = load_case(DEMO_CASE_DIR)
@@ -34,6 +37,14 @@ class DatasetTests(unittest.TestCase):
         self.assertEqual(report.verdict, Verdict.VULNERABLE)
         self.assertEqual(report.verifier_status, VerificationStatus.PASS)
         self.assertEqual(report.function_name, "parse_header")
+
+    def test_magma_libpng_case_runs_through_pipeline(self) -> None:
+        case = load_case(CASES_ROOT / "magma-libpng-png003")
+        report = build_demo_pipeline().run(case)
+
+        self.assertEqual(report.verdict, Verdict.VULNERABLE)
+        self.assertEqual(report.verifier_status, VerificationStatus.PASS)
+        self.assertEqual(report.function_name, "png_handle_PLTE")
 
 
 if __name__ == "__main__":

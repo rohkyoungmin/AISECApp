@@ -1,0 +1,8 @@
+png_handle_PLTE @ source:pngrutil.c:984
+max_palette_length = PNG_MAX_PALETTE_LENGTH;
+if (num > max_palette_length) {
+    num = max_palette_length;
+}
+for (i = 0, pal_ptr = palette; i < num; i++, pal_ptr++) {
+    /* palette entries are bounded by max_palette_length */
+}
