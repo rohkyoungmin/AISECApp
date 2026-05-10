@@ -1,0 +1,1 @@
+A heap buffer overflow can occur in parse_header() when attacker-controlled input_len is copied into a fixed-size buffer without bounds checking.

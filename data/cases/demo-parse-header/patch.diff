@@ -1,0 +1,3 @@
+- memcpy(buf, input, input_len);
++ if (input_len > sizeof(buf)) return -1;
++ memcpy(buf, input, input_len);

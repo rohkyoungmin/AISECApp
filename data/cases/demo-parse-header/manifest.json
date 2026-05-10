@@ -1,0 +1,22 @@
+{
+  "case_id": "demo-parse-header",
+  "cve_id": "CVE-2021-XXXX",
+  "project": "vulnscan",
+  "language": "C",
+  "binary": {
+    "path": "vulnerable/binary",
+    "architecture": "x86_64",
+    "compiler": "gcc-12",
+    "optimization": "O2"
+  },
+  "inputs": {
+    "advisory": "advisory.txt",
+    "patch_diff": "patch.diff",
+    "decompiler_excerpt": "vulnerable/decompiler.txt"
+  },
+  "labels": {
+    "expected_verdict": "vulnerable",
+    "vulnerable_function": "parse_header",
+    "vulnerable_address": "0x401234"
+  }
+}

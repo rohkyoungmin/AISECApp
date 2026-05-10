@@ -1,0 +1,6 @@
+parse_header @ 0x401234
+if (header_ready) {
+    if (input_len > sizeof(buf)) return -1;
+    memcpy(buf, input, input_len);
+}
+return 0;
