@@ -196,3 +196,22 @@ fatal: could not read Username for 'https://github.com': No such device or addre
 - `gh` 설치 후 `gh auth login`
 - Git credential helper 설정
 - push 권한이 있는 personal access token 사용
+
+### GitHub 인증 후 push 완료
+
+GitHub CLI device login으로 `rohkyoungmin` 계정 인증을 완료한 뒤 push에 성공했다.
+
+원격:
+
+```text
+https://github.com/rohkyoungmin/AISECApp.git
+```
+
+push된 커밋:
+
+```text
+e323228 Initialize AISEC pipeline scaffold
+9f47aa2 Document GitHub push requirements
+```
+
+이후부터는 의미 있는 변경마다 `implementation-log.md` 기록, 테스트, commit, push 순서로 관리한다.
