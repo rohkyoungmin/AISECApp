@@ -163,3 +163,36 @@ PYTHONPATH=src python3 -m unittest discover -s tests -v
 4. `https://github.com/rohkyoungmin/AISECApp.git`에 push
 
 현재 실행 환경의 기본 `.git` 디렉터리는 비어 있는 read-only placeholder라서 일반적인 `git init`이 실패한다. 이번 세션에서는 별도 git directory를 사용해 local commit을 만들고 원격 저장소에 push한다.
+
+### GitHub push 시도 결과
+
+로컬 commit 생성:
+
+```text
+e323228 Initialize AISEC pipeline scaffold
+```
+
+테스트:
+
+```text
+PYTHONPATH=src python3 -m unittest discover -s tests -v
+5 tests passed
+```
+
+원격 저장소 확인:
+
+```text
+https://github.com/rohkyoungmin/AISECApp.git
+```
+
+push는 GitHub HTTPS 인증 정보가 없어 실패했다.
+
+```text
+fatal: could not read Username for 'https://github.com': No such device or address
+```
+
+다음 push를 완료하려면 이 환경에 GitHub 인증을 연결해야 한다. 가능한 방법:
+
+- `gh` 설치 후 `gh auth login`
+- Git credential helper 설정
+- push 권한이 있는 personal access token 사용
