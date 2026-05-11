@@ -632,3 +632,16 @@ PYTHONPATH=src python3 -m aisec_app.zip_cli --max-files 20 --output-dir output
 ```bash
 PYTHONPATH=src python3 -m aisec_app.zip_cli input/project.zip --max-files 20 --output-dir output
 ```
+
+## 2026-05-11 KST - Python packaging backend 수정
+
+### 구현 결과
+
+- editable install 오류를 해결하기 위해 build backend를 `setuptools.build_meta`에서 `hatchling.build`로 변경했다.
+- Python 요구 버전을 실제 실행 환경에 맞춰 `>=3.10`으로 낮췄다.
+- hatchling wheel package target을 `src/aisec_app`으로 명시했다.
+- README 실행 섹션에 `pip install -e .[llm]` 명령을 추가했다.
+
+### 배경
+
+`pip install -e .[llm]` 실행 시 build backend가 `build_editable` hook을 제공하지 않는다는 오류가 발생했다. 또한 non-editable 설치에서도 metadata가 `UNKNOWN-0.0.0`으로 잡혀 optional dependency가 적용되지 않았다.

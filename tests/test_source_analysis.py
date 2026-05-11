@@ -81,13 +81,16 @@ class SourceAnalysisTests(unittest.TestCase):
         self.assertIn("line range", report.verifier_rationale)
 
     def test_build_source_analyzer_requires_key_by_default(self) -> None:
-        old_key = os.environ.pop("ANTHROPIC_API_KEY", None)
+        old_key = os.environ.get("ANTHROPIC_API_KEY")
+        os.environ["ANTHROPIC_API_KEY"] = ""
         try:
             with self.assertRaises(LLMNotConfiguredError):
                 build_source_analyzer(require_llm=True)
         finally:
             if old_key is not None:
                 os.environ["ANTHROPIC_API_KEY"] = old_key
+            else:
+                os.environ.pop("ANTHROPIC_API_KEY", None)
 
     def test_source_cli_heuristic_mode(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

@@ -21,9 +21,10 @@
 
 ## 실행
 
-Python 3.11+ 기준입니다.
+Python 3.10+ 기준입니다.
 
 ```bash
+pip install -e .[llm]
 PYTHONPATH=src python3 -m aisec_app.cli
 PYTHONPATH=src python3 -m aisec_app.evaluation data/cases
 python3 -m unittest discover -s tests -v
