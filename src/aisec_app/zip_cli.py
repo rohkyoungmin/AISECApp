@@ -11,14 +11,15 @@ from .zip_analysis import ZipAnalysisLimits, analyze_zip_archive
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Analyze a ZIP archive of C/C++ source files.")
-    parser.add_argument("zip_file")
+    parser.add_argument("zip_file", nargs="?")
     parser.add_argument("--allow-heuristic", action="store_true")
+    parser.add_argument("--input-dir", default="input")
     parser.add_argument("--max-files", type=int, default=20)
     parser.add_argument("--output-dir", default="output")
     parser.add_argument("--no-export", action="store_true", help="Print JSON only and do not write output files.")
     args = parser.parse_args()
 
-    zip_path = Path(args.zip_file)
+    zip_path = resolve_zip_path(args.zip_file, Path(args.input_dir))
     try:
         analyzer = build_source_analyzer(require_llm=not args.allow_heuristic)
         report = analyze_zip_archive(
@@ -41,6 +42,21 @@ def main() -> None:
     print(f"Saved Markdown: {paths.markdown_path}")
     print(f"Saved PDF: {paths.pdf_path}")
     print(f"Saved agent logs: {paths.llm_log_dir}")
+
+
+def resolve_zip_path(zip_file: str | None, input_dir: Path) -> Path:
+    if zip_file:
+        return Path(zip_file)
+
+    zip_files = sorted(input_dir.glob("*.zip"))
+    if not zip_files:
+        raise SystemExit(f"No ZIP file found. Put one in {input_dir}/ or pass a ZIP path explicitly.")
+    if len(zip_files) > 1:
+        choices = "\n".join(f"- {path}" for path in zip_files)
+        raise SystemExit(
+            f"Multiple ZIP files found in {input_dir}/. Pass one explicitly:\n{choices}"
+        )
+    return zip_files[0]
 
 
 if __name__ == "__main__":

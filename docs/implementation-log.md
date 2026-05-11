@@ -609,3 +609,26 @@ Saved Markdown: output/project-0a9bf8f4d665/report.md
 Saved PDF: output/project-0a9bf8f4d665/report.pdf
 Saved agent logs: output/project-0a9bf8f4d665/llm_logs
 ```
+
+## 2026-05-11 KST - Input directory 기반 ZIP 실행 추가
+
+### 구현 결과
+
+- `input/`을 `.gitignore`에 추가했다.
+- `zip_cli`에서 ZIP path 인자를 optional로 변경했다.
+- ZIP path를 생략하면 기본 `input/` 폴더에서 `*.zip`을 찾도록 했다.
+- `input/`에 ZIP이 하나만 있으면 자동 선택한다.
+- ZIP이 없거나 여러 개면 명시적으로 경로를 넘기도록 에러를 출력한다.
+- README 실험 명령을 `input/` 기준으로 업데이트했다.
+
+### 실험 명령
+
+```bash
+PYTHONPATH=src python3 -m aisec_app.zip_cli --max-files 20 --output-dir output
+```
+
+명시적으로 파일 지정:
+
+```bash
+PYTHONPATH=src python3 -m aisec_app.zip_cli input/project.zip --max-files 20 --output-dir output
+```

@@ -9,6 +9,7 @@ from pathlib import Path
 from aisec_app.report_export import export_project_report
 from aisec_app.source_analysis import HeuristicSourceAnalyzer
 from aisec_app.zip_analysis import analyze_zip_archive
+from aisec_app.zip_cli import resolve_zip_path
 
 
 class ReportExportTests(unittest.TestCase):
@@ -25,6 +26,23 @@ class ReportExportTests(unittest.TestCase):
             self.assertTrue(paths.pdf_path.read_bytes().startswith(b"%PDF-1.4"))
             self.assertTrue((paths.llm_log_dir / "src__vuln.c.md").exists())
             self.assertIn("AISEC Analysis Report", paths.markdown_path.read_text(encoding="utf-8"))
+
+    def test_resolve_zip_path_uses_single_zip_from_input_dir(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            input_dir = Path(tmp)
+            zip_path = input_dir / "project.zip"
+            zip_path.write_bytes(_make_zip({"src/main.c": "int main(void) { return 0; }\n"}))
+
+            self.assertEqual(zip_path, resolve_zip_path(None, input_dir))
+
+    def test_resolve_zip_path_requires_explicit_choice_for_multiple_zips(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            input_dir = Path(tmp)
+            (input_dir / "a.zip").write_bytes(_make_zip({"a.c": ""}))
+            (input_dir / "b.zip").write_bytes(_make_zip({"b.c": ""}))
+
+            with self.assertRaises(SystemExit):
+                resolve_zip_path(None, input_dir)
 
 
 def _make_zip(files: dict[str, str]) -> bytes:

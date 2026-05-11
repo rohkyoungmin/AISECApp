@@ -53,7 +53,7 @@ PYTHONPATH=src python3 -m aisec_app.source_cli path/to/source.c
 ZIP 프로젝트 분석:
 
 ```bash
-PYTHONPATH=src python3 -m aisec_app.zip_cli path/to/project.zip
+PYTHONPATH=src python3 -m aisec_app.zip_cli input/project.zip
 ```
 
 백엔드 API 실행:
@@ -76,7 +76,7 @@ API key 없이 리포트 형식만 확인하려면 local heuristic mode를 사�
 
 ```bash
 PYTHONPATH=src python3 -m aisec_app.source_cli path/to/source.c --allow-heuristic
-PYTHONPATH=src python3 -m aisec_app.zip_cli path/to/project.zip --allow-heuristic
+PYTHONPATH=src python3 -m aisec_app.zip_cli input/project.zip --allow-heuristic
 ```
 
 API에서도 heuristic fallback을 명시적으로 허용할 수 있습니다.
@@ -95,7 +95,13 @@ LLM finding은 `evidence_quote`가 실제 입력 source에 존재할 때만 acce
 Claude key 설정 후 실제 ZIP 분석:
 
 ```bash
-PYTHONPATH=src python3 -m aisec_app.zip_cli path/to/project.zip --max-files 20 --output-dir output
+PYTHONPATH=src python3 -m aisec_app.zip_cli input/project.zip --max-files 20 --output-dir output
+```
+
+`input/`에 ZIP 파일이 하나만 있으면 파일명을 생략해도 됩니다.
+
+```bash
+PYTHONPATH=src python3 -m aisec_app.zip_cli --max-files 20 --output-dir output
 ```
 
 결과는 아래 구조로 저장됩니다.

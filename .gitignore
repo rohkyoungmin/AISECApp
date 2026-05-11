@@ -11,4 +11,5 @@ build/
 *.egg-info/
 artifacts/
 external/
+input/
 output/
