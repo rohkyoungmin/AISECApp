@@ -440,3 +440,70 @@ local heuristic smoke test:
 PYTHONPATH=src python3 -m aisec_app.source_cli /tmp/sample.c --allow-heuristic
 verifier_status: pass
 ```
+
+## 2026-05-11 KST - ZIP archive backend/CLI 분석 추가
+
+### 구현 결과
+
+- ZIP 프로젝트 분석 모델을 추가했다.
+  - `ProjectAnalysisReport`
+- `src/aisec_app/zip_analysis.py` 추가
+  - ZIP 내부에서 C/C++ source 파일만 수집
+  - path traversal 방지
+  - 분석 파일 수, 파일 크기, 전체 byte 제한 적용
+  - 파일별 `SourceAnalysisReport`를 project-level report로 묶음
+- `src/aisec_app/zip_cli.py` 추가
+  - 터미널에서 ZIP 파일을 직접 분석 가능
+  - `--allow-heuristic`으로 Claude key 없이 report 형식 확인 가능
+- `src/aisec_app/api.py` 추가
+  - `GET /health`
+  - `POST /analyze/zip`
+  - 프론트엔드 UI는 만들지 않음
+- `pyproject.toml`의 `api` extra에 `python-multipart` 추가
+- `README.md`에 ZIP CLI와 curl 업로드 예시 추가
+- `tests/test_zip_analysis.py` 추가
+
+### 실행 방법
+
+터미널 직접 분석:
+
+```bash
+PYTHONPATH=src python3 -m aisec_app.zip_cli path/to/project.zip
+```
+
+Claude key 없이 형식 확인:
+
+```bash
+PYTHONPATH=src python3 -m aisec_app.zip_cli path/to/project.zip --allow-heuristic
+```
+
+백엔드 실행:
+
+```bash
+pip install -e .[api,llm]
+uvicorn aisec_app.api:app --app-dir src --reload
+```
+
+curl 업로드:
+
+```bash
+curl -X POST \
+  -F "file=@path/to/project.zip" \
+  -F "max_files=20" \
+  http://127.0.0.1:8000/analyze/zip
+```
+
+### 검증 결과
+
+```text
+PYTHONPATH=src python3 -m unittest discover -s tests -v
+17 tests passed
+```
+
+ZIP CLI smoke test:
+
+```text
+PYTHONPATH=src python3 -m aisec_app.zip_cli /tmp/project.zip --allow-heuristic
+verifier_status: pass
+analyzed_files: 1
+```

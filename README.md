@@ -50,10 +50,42 @@ ANTHROPIC_MODEL=claude-3-5-sonnet-latest
 PYTHONPATH=src python3 -m aisec_app.source_cli path/to/source.c
 ```
 
+ZIP 프로젝트 분석:
+
+```bash
+PYTHONPATH=src python3 -m aisec_app.zip_cli path/to/project.zip
+```
+
+백엔드 API 실행:
+
+```bash
+pip install -e .[api,llm]
+uvicorn aisec_app.api:app --app-dir src --reload
+```
+
+터미널에서 ZIP 업로드:
+
+```bash
+curl -X POST \
+  -F "file=@path/to/project.zip" \
+  -F "max_files=20" \
+  http://127.0.0.1:8000/analyze/zip
+```
+
 API key 없이 리포트 형식만 확인하려면 local heuristic mode를 사용할 수 있습니다.
 
 ```bash
 PYTHONPATH=src python3 -m aisec_app.source_cli path/to/source.c --allow-heuristic
+PYTHONPATH=src python3 -m aisec_app.zip_cli path/to/project.zip --allow-heuristic
+```
+
+API에서도 heuristic fallback을 명시적으로 허용할 수 있습니다.
+
+```bash
+curl -X POST \
+  -F "file=@path/to/project.zip" \
+  -F "allow_heuristic=true" \
+  http://127.0.0.1:8000/analyze/zip
 ```
 
 LLM finding은 `evidence_quote`가 실제 입력 source에 존재할 때만 accepted finding으로 남고, 근거가 입력에 없으면 rejected finding으로 분리됩니다.

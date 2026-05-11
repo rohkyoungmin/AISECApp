@@ -138,3 +138,18 @@ class SourceAnalysisReport:
 
     def to_dict(self) -> dict[str, object]:
         return asdict(self)
+
+
+@dataclass(slots=True)
+class ProjectAnalysisReport:
+    project_id: str
+    archive_name: str
+    total_files: int
+    analyzed_files: int
+    skipped_files: list[str]
+    verifier_status: VerificationStatus
+    summary: str
+    file_reports: list[SourceAnalysisReport] = field(default_factory=list)
+
+    def to_dict(self) -> dict[str, object]:
+        return asdict(self)
