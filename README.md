@@ -90,6 +90,28 @@ curl -X POST \
 
 LLM finding은 `evidence_quote`가 실제 입력 source에 존재할 때만 accepted finding으로 남고, 근거가 입력에 없으면 rejected finding으로 분리됩니다.
 
+## 실험 명령
+
+Claude key 설정 후 실제 ZIP 분석:
+
+```bash
+PYTHONPATH=src python3 -m aisec_app.zip_cli path/to/project.zip --max-files 20 --output-dir output
+```
+
+결과는 아래 구조로 저장됩니다.
+
+```text
+output/
+  project-<hash>/
+    report.json
+    report.md
+    report.pdf
+    llm_logs/
+      <source-file>.md
+```
+
+`report.pdf`는 발표/확인용 요약 리포트이고, `report.md`와 `report.json`은 상세 결과 확인용입니다. `llm_logs/`에는 파일별 agent decision log가 Markdown으로 저장됩니다.
+
 ## Multi-Agent 분석 구조
 
 Source/ZIP 분석은 아래 agent 흐름을 따릅니다.

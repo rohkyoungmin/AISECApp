@@ -553,3 +553,59 @@ ZIP heuristic smoke test:
 model: heuristic-multi-agent
 summary: Triage signals: strcpy. Accepted findings: 1. Rejected findings: 0.
 ```
+
+## 2026-05-11 KST - Experiment output export 추가
+
+### 구현 결과
+
+- `output/`을 `.gitignore`에 추가했다.
+- `src/aisec_app/report_export.py` 추가
+  - project report JSON 저장
+  - Markdown report 저장
+  - PDF summary report 저장
+  - 파일별 agent decision log를 `llm_logs/*.md`로 저장
+- `src/aisec_app/zip_cli.py` 확장
+  - 기본적으로 `output/project-<hash>/`에 실험 결과 저장
+  - `--output-dir` 지원
+  - `--no-export`로 stdout JSON만 출력 가능
+- `tests/test_report_export.py` 추가
+- `README.md`에 실제 실험 명령과 output 구조 추가
+
+### 실험 명령
+
+```bash
+PYTHONPATH=src python3 -m aisec_app.zip_cli path/to/project.zip --max-files 20 --output-dir output
+```
+
+Claude key 없이 형식 확인:
+
+```bash
+PYTHONPATH=src python3 -m aisec_app.zip_cli path/to/project.zip --allow-heuristic --output-dir output
+```
+
+### Output 구조
+
+```text
+output/project-<hash>/
+  report.json
+  report.md
+  report.pdf
+  llm_logs/
+    <source-file>.md
+```
+
+### 검증 결과
+
+```text
+PYTHONPATH=src python3 -m unittest discover -s tests -v
+19 tests passed
+```
+
+Smoke test 결과:
+
+```text
+Saved JSON: output/project-0a9bf8f4d665/report.json
+Saved Markdown: output/project-0a9bf8f4d665/report.md
+Saved PDF: output/project-0a9bf8f4d665/report.pdf
+Saved agent logs: output/project-0a9bf8f4d665/llm_logs
+```
