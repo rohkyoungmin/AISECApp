@@ -276,3 +276,67 @@ PYTHONPATH=src python3 -m aisec_app.cli data/cases/magma-libpng-png003
 - 현재 `vulnerable/binary`와 `fixed/binary`는 placeholder이다.
 - `decompiler.txt`는 실제 binary decompile 결과가 아니라 Magma patch를 기준으로 만든 source-level excerpt이다.
 - 다음 단계에서 Magma build를 수행하고 실제 build artifact와 decompiler/static-analysis output으로 교체해야 한다.
+
+## 2026-05-11 KST - Evaluation layer 구현 시작
+
+### 이번 작업 목표
+
+`manifest.json`의 `labels`를 읽어 전체 `data/cases/`를 평가하는 script를 추가한다.
+
+### 구현 예정
+
+- 정답 label 모델 추가
+- dataset loader가 `CVECase`와 labels를 함께 반환할 수 있도록 확장
+- `src/aisec_app/evaluation.py` 추가
+- 전체 case 수, detection accuracy, function localization accuracy, verifier status 분포 출력
+- 테스트 추가
+
+### 구현 결과
+
+추가/변경 파일:
+
+- `src/aisec_app/models.py`
+  - `CaseLabels`, `CaseRecord` 추가
+- `src/aisec_app/dataset.py`
+  - `load_case_record`, `load_case_records` 추가
+  - 기존 `load_case`, `load_cases`는 호환 유지
+- `src/aisec_app/evaluation.py`
+  - 전체 cases 평가 CLI 추가
+  - text 출력과 `--json` 출력 지원
+- `tests/test_dataset.py`
+  - manifest label loader 테스트 추가
+- `tests/test_evaluation.py`
+  - evaluation summary와 text formatting 테스트 추가
+
+### 실행 방법
+
+```bash
+PYTHONPATH=src python3 -m aisec_app.evaluation data/cases
+PYTHONPATH=src python3 -m aisec_app.evaluation data/cases --json
+```
+
+### 검증 결과
+
+```text
+Cases: 2
+Detection Accuracy: 2/2 (100.00%)
+Function Localization Accuracy: 2/2 (100.00%)
+Verifier Status:
+  needs_review: 0
+  pass: 2
+  reject: 0
+```
+
+테스트:
+
+```text
+PYTHONPATH=src python3 -m unittest discover -s tests -v
+10 tests passed
+```
+
+### 다음 작업 후보
+
+- 실제 Magma build artifact 생성
+- placeholder binary를 실제 vulnerable/fixed binary로 교체
+- objdump 또는 decompiler output 생성 자동화
+- verifier가 confidence 외에 evidence coverage를 더 세밀하게 평가하도록 개선

@@ -35,6 +35,19 @@ class CVECase:
 
 
 @dataclass(slots=True)
+class CaseLabels:
+    expected_verdict: Verdict
+    vulnerable_function: str
+    vulnerable_address: str | None = None
+
+
+@dataclass(slots=True)
+class CaseRecord:
+    case: CVECase
+    labels: CaseLabels
+
+
+@dataclass(slots=True)
 class Evidence:
     source: str
     summary: str
