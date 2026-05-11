@@ -99,13 +99,20 @@ class ClaudeClient:
             raise LLMNotConfiguredError("anthropic is not installed. Install with `pip install -e .[llm]`.") from exc
 
         client = anthropic.Anthropic(api_key=self.settings.api_key)
-        response = client.messages.create(
-            model=self.settings.model,
-            max_tokens=self.settings.max_tokens,
-            temperature=self.settings.temperature,
-            system=system,
-            messages=[{"role": "user", "content": user}],
-        )
+        try:
+            response = client.messages.create(
+                model=self.settings.model,
+                max_tokens=self.settings.max_tokens,
+                temperature=self.settings.temperature,
+                system=system,
+                messages=[{"role": "user", "content": user}],
+            )
+        except anthropic.NotFoundError as exc:
+            raise LLMNotConfiguredError(
+                f"Anthropic model `{self.settings.model}` is not available for this API key. "
+                "Set ANTHROPIC_MODEL in .env to a model returned by the Anthropic Models API. "
+                "Current recommended default: claude-sonnet-4-6."
+            ) from exc
         return _parse_json_object(_extract_text(response))
 
 

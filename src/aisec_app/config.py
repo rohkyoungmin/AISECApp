@@ -28,7 +28,7 @@ def load_claude_settings() -> ClaudeSettings:
     load_dotenv_if_available()
     return ClaudeSettings(
         api_key=_optional_env("ANTHROPIC_API_KEY"),
-        model=os.getenv("ANTHROPIC_MODEL", "claude-3-5-sonnet-latest"),
+        model=os.getenv("ANTHROPIC_MODEL", "claude-sonnet-4-6"),
         max_tokens=_int_env("ANTHROPIC_MAX_TOKENS", 4096),
         temperature=_float_env("ANTHROPIC_TEMPERATURE", 0.0),
     )

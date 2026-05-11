@@ -645,3 +645,22 @@ PYTHONPATH=src python3 -m aisec_app.zip_cli input/project.zip --max-files 20 --o
 ### 배경
 
 `pip install -e .[llm]` 실행 시 build backend가 `build_editable` hook을 제공하지 않는다는 오류가 발생했다. 또한 non-editable 설치에서도 metadata가 `UNKNOWN-0.0.0`으로 잡혀 optional dependency가 적용되지 않았다.
+
+## 2026-05-11 KST - Anthropic 기본 모델명 수정
+
+### 구현 결과
+
+- Anthropic Models API로 현재 key에서 사용 가능한 모델을 확인했다.
+- 기본 Claude 모델명을 `claude-3-5-sonnet-latest`에서 `claude-sonnet-4-6`으로 변경했다.
+- `.env.example`, README, `config.py`의 기본값을 업데이트했다.
+- Anthropic에서 모델명을 찾지 못하는 경우 Python traceback 대신 설정 안내 메시지를 출력하도록 처리했다.
+
+### 확인된 모델 예시
+
+```text
+claude-opus-4-7
+claude-sonnet-4-6
+claude-opus-4-6
+claude-haiku-4-5-20251001
+claude-sonnet-4-5-20250929
+```

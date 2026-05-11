@@ -42,7 +42,7 @@ cp .env.example .env
 
 ```env
 ANTHROPIC_API_KEY=sk-ant-...
-ANTHROPIC_MODEL=claude-3-5-sonnet-latest
+ANTHROPIC_MODEL=claude-sonnet-4-6
 ```
 
 소스 파일 분석:
