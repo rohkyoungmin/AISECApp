@@ -54,6 +54,32 @@ class SourceAnalysisTests(unittest.TestCase):
         self.assertEqual(len(report.findings), 0)
         self.assertEqual(len(report.rejected_findings), 1)
 
+    def test_report_rejects_implausible_line_reference(self) -> None:
+        artifact = SourceArtifact(filename="sample.c", content="void f(char *s) { strcpy(buf, s); }\n")
+        payload = {
+            "summary": "bad line",
+            "findings": [
+                {
+                    "title": "unsafe copy",
+                    "verdict": "vulnerable",
+                    "severity": "medium",
+                    "function_name": "f",
+                    "line_start": 100,
+                    "line_end": 100,
+                    "confidence": 0.9,
+                    "root_cause": "unbounded copy",
+                    "evidence_quote": "void f(char *s) { strcpy(buf, s); }",
+                    "remediation": "add bounds check",
+                }
+            ],
+        }
+
+        report = verify_source_report(artifact, payload, model="test")
+
+        self.assertEqual(report.verifier_status, VerificationStatus.REJECT)
+        self.assertEqual(len(report.findings), 0)
+        self.assertIn("line range", report.verifier_rationale)
+
     def test_build_source_analyzer_requires_key_by_default(self) -> None:
         old_key = os.environ.pop("ANTHROPIC_API_KEY", None)
         try:

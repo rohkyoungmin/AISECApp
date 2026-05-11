@@ -90,6 +90,29 @@ curl -X POST \
 
 LLM finding은 `evidence_quote`가 실제 입력 source에 존재할 때만 accepted finding으로 남고, 근거가 입력에 없으면 rejected finding으로 분리됩니다.
 
+## Multi-Agent 분석 구조
+
+Source/ZIP 분석은 아래 agent 흐름을 따릅니다.
+
+```text
+Triage Agent -> Finding Agent -> Skeptic Verifier Agent -> Reporter Agent
+```
+
+- `Triage Agent`: 분석할 함수와 위험 신호를 고릅니다.
+- `Finding Agent`: 취약점 후보와 source evidence quote를 생성합니다.
+- `Skeptic Verifier Agent`: 근거가 입력 source에 실제로 있는지, claim을 지지하는지, 라인 범위와 confidence가 타당한지 검증합니다.
+- `Reporter Agent`: accepted finding과 rejected finding을 분리해 최종 report를 만듭니다.
+
+Reject 기준:
+
+- evidence quote가 없음
+- evidence quote가 제출된 source에 없음
+- finding verdict가 `vulnerable`이 아님
+- confidence가 threshold보다 낮음
+- root cause 또는 remediation이 없음
+- line reference가 source 범위를 벗어남
+- Claude verifier가 quote와 claim이 직접 연결되지 않는다고 판단함
+
 ## 저장소 구조
 
 ```text

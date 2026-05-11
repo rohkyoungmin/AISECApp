@@ -507,3 +507,49 @@ PYTHONPATH=src python3 -m aisec_app.zip_cli /tmp/project.zip --allow-heuristic
 verifier_status: pass
 analyzed_files: 1
 ```
+
+## 2026-05-11 KST - Source 분석 multi-agent 리팩터링
+
+### 구현 결과
+
+- `src/aisec_app/source_analysis.py`를 multi-agent 구조로 리팩터링했다.
+- Source/ZIP 분석은 이제 아래 흐름을 따른다.
+
+```text
+Triage Agent -> Finding Agent -> Skeptic Verifier Agent -> Reporter Agent
+```
+
+- Claude 사용 시 agent별 역할:
+  - `ClaudeTriageAgent`: 분석 우선순위, 후보 함수, risk signal 선정
+  - `ClaudeFindingAgent`: 취약점 후보와 exact evidence quote 생성
+  - `ClaudeSkepticVerifierAgent`: deterministic evidence policy 통과 후 claim/evidence 관계를 재검토
+  - `SourceReporterAgent`: accepted/rejected finding 분리
+- Claude key가 없을 때 `--allow-heuristic`을 쓰면 같은 agent 계약을 따르는 local heuristic agents가 동작한다.
+- 기존 `verify_source_report()` 호환 경로는 유지하되, 내부적으로 evidence policy verifier를 사용하도록 바꿨다.
+
+### Reject 정책
+
+Finding은 아래 조건 중 하나라도 실패하면 reject된다.
+
+- evidence quote가 없음
+- evidence quote가 제출된 source에 없음
+- finding verdict가 `vulnerable`이 아님
+- confidence가 threshold보다 낮음
+- root cause가 없음
+- remediation이 없음
+- line reference가 source 범위를 벗어남
+- Claude verifier가 quote와 claim이 직접 연결되지 않거나 주변 mitigation이 있다고 판단함
+
+### 검증 결과
+
+```text
+PYTHONPATH=src python3 -m unittest discover -s tests -v
+18 tests passed
+```
+
+ZIP heuristic smoke test:
+
+```text
+model: heuristic-multi-agent
+summary: Triage signals: strcpy. Accepted findings: 1. Rejected findings: 0.
+```
