@@ -1,0 +1,1 @@
+Magma libtiff bug TIF014 is modeled by a patch touching libtiff/tif_dirread.c. The Magma canary marks the vulnerable condition `MAGMA_AND(tif->tif_mode == O_RDONLY, \ + MAGMA_AND(nstrips > 1000000, \ + MAGMA_OR(offset >= TIFFGetFileSize(tif), \ + stripbytes * (nstrips - 1) > (TIFFGetFileSize(tif) - offset))))`.

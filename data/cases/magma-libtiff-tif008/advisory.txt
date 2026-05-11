@@ -1,0 +1,1 @@
+Magma libtiff bug TIF008 is modeled by a patch touching libtiff/tif_next.c. The Magma canary marks the vulnerable condition `op_offset >= scanline`.

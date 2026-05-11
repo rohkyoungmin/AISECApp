@@ -1,0 +1,1 @@
+Magma openssl bug SSL016 is modeled by a patch touching crypto/bn/bn_gf2m.c. The Magma canary marks the vulnerable condition `udp[0] == 0`.

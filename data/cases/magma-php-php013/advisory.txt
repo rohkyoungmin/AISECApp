@@ -1,0 +1,1 @@
+Magma php bug PHP013 is modeled by a patch touching ext/intl/msgformat/msgformat_parse.c. The Magma canary marks the vulnerable condition `(slocale_len > INTL_MAX_LOCALE_LEN)`.

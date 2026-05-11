@@ -1,0 +1,1 @@
+Magma libtiff bug TIF004 is modeled by a patch touching libtiff/tif_ojpeg.c. The Magma canary marks the vulnerable condition `sp->decoder_ok == 0`.

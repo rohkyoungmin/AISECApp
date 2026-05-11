@@ -1,0 +1,1 @@
+Magma openssl bug SSL002 is modeled by a patch touching ssl/statem/statem.c. The Magma canary marks the vulnerable condition `s->init_msg != (s->init_buf->data + msg_offset)`.

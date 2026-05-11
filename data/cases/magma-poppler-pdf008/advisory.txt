@@ -1,0 +1,1 @@
+Magma poppler bug PDF008 is modeled by a patch touching poppler/GfxState.cc. The Magma canary marks the vulnerable condition `vertsPerRow <= 0`.

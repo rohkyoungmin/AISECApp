@@ -1,0 +1,1 @@
+Magma poppler bug PDF002 is modeled by a patch touching poppler/JPEG2000Stream.cc. The Magma canary marks the vulnerable condition `oLen.getInt() < 0`.

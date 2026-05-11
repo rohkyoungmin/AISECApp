@@ -1,0 +1,28 @@
+{
+  "case_id": "magma-openssl-ssl001",
+  "cve_id": "MAGMA-SSL001",
+  "project": "openssl",
+  "language": "C",
+  "source": {
+    "benchmark": "Magma",
+    "target": "openssl",
+    "bug_id": "SSL001",
+    "patch_path": "external/magma/targets/openssl/patches/bugs/SSL001.patch"
+  },
+  "binary": {
+    "path": "vulnerable/binary",
+    "architecture": "x86_64",
+    "compiler": "magma-default",
+    "optimization": "unknown"
+  },
+  "inputs": {
+    "advisory": "advisory.txt",
+    "patch_diff": "patch.diff",
+    "decompiler_excerpt": "vulnerable/decompiler.txt"
+  },
+  "labels": {
+    "expected_verdict": "vulnerable",
+    "vulnerable_function": "i2c_ibuf",
+    "vulnerable_address": "source:crypto/asn1/a_int.c:133:i2c_ibuf"
+  }
+}

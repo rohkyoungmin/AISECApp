@@ -1,0 +1,28 @@
+{
+  "case_id": "magma-openssl-ssl019",
+  "cve_id": "MAGMA-SSL019",
+  "project": "openssl",
+  "language": "C",
+  "source": {
+    "benchmark": "Magma",
+    "target": "openssl",
+    "bug_id": "SSL019",
+    "patch_path": "external/magma/targets/openssl/patches/bugs/SSL019.patch"
+  },
+  "binary": {
+    "path": "vulnerable/binary",
+    "architecture": "x86_64",
+    "compiler": "magma-default",
+    "optimization": "unknown"
+  },
+  "inputs": {
+    "advisory": "advisory.txt",
+    "patch_diff": "patch.diff",
+    "decompiler_excerpt": "vulnerable/decompiler.txt"
+  },
+  "labels": {
+    "expected_verdict": "vulnerable",
+    "vulnerable_function": "ssl3_read_bytes",
+    "vulnerable_address": "source:ssl/record/rec_layer_s3.c:1469:ssl3_read_bytes"
+  }
+}

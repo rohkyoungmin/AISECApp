@@ -1,0 +1,1 @@
+Magma poppler bug PDF015 is modeled by a patch touching poppler/FileSpec.cc. The Magma canary marks the vulnerable condition `!m_objStr.isStream()`.

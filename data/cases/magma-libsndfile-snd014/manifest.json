@@ -1,0 +1,28 @@
+{
+  "case_id": "magma-libsndfile-snd014",
+  "cve_id": "MAGMA-SND014",
+  "project": "libsndfile",
+  "language": "C",
+  "source": {
+    "benchmark": "Magma",
+    "target": "libsndfile",
+    "bug_id": "SND014",
+    "patch_path": "external/magma/targets/libsndfile/patches/bugs/SND014.patch"
+  },
+  "binary": {
+    "path": "vulnerable/binary",
+    "architecture": "x86_64",
+    "compiler": "magma-default",
+    "optimization": "unknown"
+  },
+  "inputs": {
+    "advisory": "advisory.txt",
+    "patch_diff": "patch.diff",
+    "decompiler_excerpt": "vulnerable/decompiler.txt"
+  },
+  "labels": {
+    "expected_verdict": "vulnerable",
+    "vulnerable_function": "f2alaw_array",
+    "vulnerable_address": "source:src/alaw.c:349:f2alaw_array"
+  }
+}

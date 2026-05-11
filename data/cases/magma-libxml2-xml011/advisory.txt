@@ -1,0 +1,1 @@
+Magma libxml2 bug XML011 is modeled by a patch touching xmlstring.c. The Magma canary marks the vulnerable condition `size < 0`.

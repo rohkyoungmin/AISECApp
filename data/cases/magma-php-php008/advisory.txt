@@ -1,0 +1,1 @@
+Magma php bug PHP008 is modeled by a patch touching ext/standard/dns.c. The Magma canary marks the vulnerable condition `dlen == 0`.

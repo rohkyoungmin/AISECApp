@@ -1,0 +1,1 @@
+Magma sqlite3 bug SQL006 is modeled by a patch touching src/select.c. The Magma canary marks the vulnerable condition `p->pWin != 0`.

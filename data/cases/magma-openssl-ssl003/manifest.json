@@ -1,0 +1,28 @@
+{
+  "case_id": "magma-openssl-ssl003",
+  "cve_id": "MAGMA-SSL003",
+  "project": "openssl",
+  "language": "C",
+  "source": {
+    "benchmark": "Magma",
+    "target": "openssl",
+    "bug_id": "SSL003",
+    "patch_path": "external/magma/targets/openssl/patches/bugs/SSL003.patch"
+  },
+  "binary": {
+    "path": "vulnerable/binary",
+    "architecture": "x86_64",
+    "compiler": "magma-default",
+    "optimization": "unknown"
+  },
+  "inputs": {
+    "advisory": "advisory.txt",
+    "patch_diff": "patch.diff",
+    "decompiler_excerpt": "vulnerable/decompiler.txt"
+  },
+  "labels": {
+    "expected_verdict": "vulnerable",
+    "vulnerable_function": "asn1_d2i_read_bio",
+    "vulnerable_address": "source:crypto/asn1/a_d2i_fp.c:169:asn1_d2i_read_bio"
+  }
+}

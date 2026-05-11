@@ -1,0 +1,1 @@
+Magma poppler bug PDF009 is modeled by a patch touching poppler/Parser.cc. The Magma canary marks the vulnerable condition `length >= LLONG_MAX - pos - 5000`.

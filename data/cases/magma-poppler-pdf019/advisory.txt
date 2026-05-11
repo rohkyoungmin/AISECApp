@@ -1,0 +1,1 @@
+Magma poppler bug PDF019 is modeled by a patch touching poppler/JBIG2Stream.cc. The Magma canary marks the vulnerable condition `MAGMA_OR(y + yy >= h, y + yy < 0)`.

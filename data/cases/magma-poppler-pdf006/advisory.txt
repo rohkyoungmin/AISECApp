@@ -1,0 +1,1 @@
+Magma poppler bug PDF006 is modeled by a patch touching splash/Splash.cc. The Magma canary marks the vulnerable condition `MAGMA_OR(src->getWidth() - xSrc < width, \ + MAGMA_OR(src->getHeight() - ySrc < height, \ + MAGMA_OR(bitmap->getWidth() - xDest < width, \ + bitmap->getHeight() - yDest < height))) \ +`.

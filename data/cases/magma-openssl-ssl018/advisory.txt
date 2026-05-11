@@ -1,0 +1,1 @@
+Magma openssl bug SSL018 is modeled by a patch touching ssl/statem/statem_dtls.c. The Magma canary marks the vulnerable condition `msg_len > dtls1_max_handshake_message_len(s)`.

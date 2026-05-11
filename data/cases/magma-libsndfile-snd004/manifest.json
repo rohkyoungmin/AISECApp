@@ -1,0 +1,28 @@
+{
+  "case_id": "magma-libsndfile-snd004",
+  "cve_id": "MAGMA-SND004",
+  "project": "libsndfile",
+  "language": "C",
+  "source": {
+    "benchmark": "Magma",
+    "target": "libsndfile",
+    "bug_id": "SND004",
+    "patch_path": "external/magma/targets/libsndfile/patches/bugs/SND004.patch"
+  },
+  "binary": {
+    "path": "vulnerable/binary",
+    "architecture": "x86_64",
+    "compiler": "magma-default",
+    "optimization": "unknown"
+  },
+  "inputs": {
+    "advisory": "advisory.txt",
+    "patch_diff": "patch.diff",
+    "decompiler_excerpt": "vulnerable/decompiler.txt"
+  },
+  "labels": {
+    "expected_verdict": "vulnerable",
+    "vulnerable_function": "psf_fwrite",
+    "vulnerable_address": "source:src/file_io.c:358:psf_fwrite"
+  }
+}

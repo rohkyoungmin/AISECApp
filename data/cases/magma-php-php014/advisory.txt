@@ -1,0 +1,1 @@
+Magma php bug PHP014 is modeled by a patch touching ext/intl/locale/locale_methods.c. The Magma canary marks the vulnerable condition `loc_name_len > ULOC_FULLNAME_CAPACITY`.

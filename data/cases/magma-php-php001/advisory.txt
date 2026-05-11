@@ -1,0 +1,1 @@
+Magma php bug PHP001 is modeled by a patch touching ext/phar/phar.c. The Magma canary marks the vulnerable condition `memchr(pos + 1, '.', filename_len - (pos - filename) - 1) == NULL`.

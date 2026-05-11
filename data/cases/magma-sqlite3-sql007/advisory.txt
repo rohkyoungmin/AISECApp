@@ -1,0 +1,1 @@
+Magma sqlite3 bug SQL007 is modeled by a patch touching src/build.c. The Magma canary marks the vulnerable condition `pSelect != 0`.

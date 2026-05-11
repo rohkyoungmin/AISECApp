@@ -1,0 +1,1 @@
+Magma openssl bug SSL010 is modeled by a patch touching crypto/bn/bn_local.h. The Magma canary marks the vulnerable condition `bits > (INT_MAX - BN_BITS2 + 1)`.

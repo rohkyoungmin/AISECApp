@@ -1,0 +1,1 @@
+Magma libsndfile bug SND025 is modeled by a patch touching src/wav.c. The Magma canary marks the vulnerable condition `psf->instrument->loop_count > ARRAY_LEN (psf->instrument->loops)`.

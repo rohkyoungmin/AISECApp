@@ -1,0 +1,1 @@
+Magma php bug PHP006 is modeled by a patch touching ext/exif/exif.c. The Magma canary marks the vulnerable condition `pos >= ImageInfo->Thumbnail.size`.

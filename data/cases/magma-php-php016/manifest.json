@@ -1,0 +1,28 @@
+{
+  "case_id": "magma-php-php016",
+  "cve_id": "MAGMA-PHP016",
+  "project": "php",
+  "language": "C",
+  "source": {
+    "benchmark": "Magma",
+    "target": "php",
+    "bug_id": "PHP016",
+    "patch_path": "external/magma/targets/php/patches/bugs/PHP016.patch"
+  },
+  "binary": {
+    "path": "vulnerable/binary",
+    "architecture": "x86_64",
+    "compiler": "magma-default",
+    "optimization": "unknown"
+  },
+  "inputs": {
+    "advisory": "advisory.txt",
+    "patch_diff": "patch.diff",
+    "decompiler_excerpt": "vulnerable/decompiler.txt"
+  },
+  "labels": {
+    "expected_verdict": "vulnerable",
+    "vulnerable_function": "phar_verify_signature",
+    "vulnerable_address": "source:ext/phar/util.c:1599:phar_verify_signature"
+  }
+}

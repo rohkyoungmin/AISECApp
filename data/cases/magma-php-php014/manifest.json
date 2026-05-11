@@ -1,0 +1,28 @@
+{
+  "case_id": "magma-php-php014",
+  "cve_id": "MAGMA-PHP014",
+  "project": "php",
+  "language": "C",
+  "source": {
+    "benchmark": "Magma",
+    "target": "php",
+    "bug_id": "PHP014",
+    "patch_path": "external/magma/targets/php/patches/bugs/PHP014.patch"
+  },
+  "binary": {
+    "path": "vulnerable/binary",
+    "architecture": "x86_64",
+    "compiler": "magma-default",
+    "optimization": "unknown"
+  },
+  "inputs": {
+    "advisory": "advisory.txt",
+    "patch_diff": "patch.diff",
+    "decompiler_excerpt": "vulnerable/decompiler.txt"
+  },
+  "labels": {
+    "expected_verdict": "vulnerable",
+    "vulnerable_function": "get_icu_disp_value_src_php",
+    "vulnerable_address": "source:ext/intl/locale/locale_methods.c:504:get_icu_disp_value_src_php"
+  }
+}

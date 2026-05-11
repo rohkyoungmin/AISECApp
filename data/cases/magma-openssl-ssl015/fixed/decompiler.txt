@@ -1,0 +1,62 @@
+PKCS7_dataFinal @ source:crypto/pkcs7/pk7_doit.c:203:PKCS7_dataFinal
+Magma-derived source-level excerpt for the fixed build.
+MAGMA_ENABLE_FIXES is treated as enabled for this placeholder excerpt.
+
+diff --git a/crypto/pkcs7/pk7_doit.c b/crypto/pkcs7/pk7_doit.c
+index 2cf62b62cd..f53a5e0082 100644
+--- a/crypto/pkcs7/pk7_doit.c
++++ b/crypto/pkcs7/pk7_doit.c
+@@ -203,6 +203,7 @@ BIO *PKCS7_dataInit(PKCS7 *p7, BIO *bio)
+     PKCS7_RECIP_INFO *ri = NULL;
+     ASN1_OCTET_STRING *os = NULL;
+ 
++#ifdef MAGMA_ENABLE_FIXES
+     if (p7 == NULL) {
+         PKCS7err(PKCS7_F_PKCS7_DATAINIT, PKCS7_R_INVALID_NULL_POINTER);
+         return NULL;
+@@ -221,6 +223,11 @@ BIO *PKCS7_dataInit(PKCS7 *p7, BIO *bio)
+         PKCS7err(PKCS7_F_PKCS7_DATAINIT, PKCS7_R_NO_CONTENT);
+         return NULL;
+     }
++#else
++#ifdef MAGMA_ENABLE_CANARIES
++    MAGMA_LOG("%MAGMA_BUG%", MAGMA_OR(p7 == NULL, p7->d.ptr));
++#endif
++#endif
+ 
+     i = OBJ_obj2nid(p7->type);
+     p7->state = PKCS7_S_HEADER;
+@@ -369,6 +376,7 @@ BIO *PKCS7_dataDecode(PKCS7 *p7, EVP_PKEY *pkey, BIO *in_bio, X509 *pcert)
+     const char *name;
+     const PKCS7_CTX *p7_ctx;
+ 
++#ifdef MAGMA_ENABLE_FIXES
+     if (p7 == NULL) {
+         PKCS7err(PKCS7_F_PKCS7_DATADECODE, PKCS7_R_INVALID_NULL_POINTER);
+         return NULL;
+@@ -379,7 +386,12 @@ BIO *PKCS7_dataDecode(PKCS7 *p7, EVP_PKEY *pkey, BIO *in_bio, X509 *pcert)
+         PKCS7err(PKCS7_F_PKCS7_DATADECODE, PKCS7_R_NO_CONTENT);
+         return NULL;
+     }
+ 
++#else
++#ifdef MAGMA_ENABLE_CANARIES
++    MAGMA_LOG("%MAGMA_BUG%", MAGMA_OR(p7 == NULL, p7->d.ptr == NULL));
++#endif
++#endif
+@@ -650,6 +661,7 @@ int PKCS7_dataFinal(PKCS7 *p7, BIO *bio)
++#ifdef MAGMA_ENABLE_FIXES
+@@ -660,7 +671,12 @@ int PKCS7_dataFinal(PKCS7 *p7, BIO *bio)
++#else
++#ifdef MAGMA_ENABLE_CANARIES
++    MAGMA_LOG("%MAGMA_BUG%", MAGMA_OR(p7 == NULL, p7->d.ptr == NULL));
++#endif
++#endif
+@@ -920,7 +960,8 @@ int PKCS7_dataVerify(X509_STORE *cert_store, X509_STORE_CTX *ctx, BIO *bio,
++#ifdef MAGMA_ENABLE_FIXES
+@@ -930,7 +970,12 @@ int PKCS7_dataVerify(X509_STORE *cert_store, X509_STORE_CTX *ctx, BIO *bio,
++#else
++#ifdef MAGMA_ENABLE_CANARIES
++    MAGMA_LOG("%MAGMA_BUG%", MAGMA_OR(p7 == NULL, p7->d.ptr));
++#endif
++#endif

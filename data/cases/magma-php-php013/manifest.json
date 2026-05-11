@@ -1,0 +1,28 @@
+{
+  "case_id": "magma-php-php013",
+  "cve_id": "MAGMA-PHP013",
+  "project": "php",
+  "language": "C",
+  "source": {
+    "benchmark": "Magma",
+    "target": "php",
+    "bug_id": "PHP013",
+    "patch_path": "external/magma/targets/php/patches/bugs/PHP013.patch"
+  },
+  "binary": {
+    "path": "vulnerable/binary",
+    "architecture": "x86_64",
+    "compiler": "magma-default",
+    "optimization": "unknown"
+  },
+  "inputs": {
+    "advisory": "advisory.txt",
+    "patch_diff": "patch.diff",
+    "decompiler_excerpt": "vulnerable/decompiler.txt"
+  },
+  "labels": {
+    "expected_verdict": "vulnerable",
+    "vulnerable_function": "PHP_FUNCTION",
+    "vulnerable_address": "source:ext/intl/msgformat/msgformat_parse.c:102:PHP_FUNCTION"
+  }
+}

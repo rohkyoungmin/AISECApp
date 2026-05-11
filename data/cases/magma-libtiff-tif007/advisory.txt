@@ -1,0 +1,1 @@
+Magma libtiff bug TIF007 is modeled by a patch touching libtiff/tif_dirread.c. The Magma canary marks the vulnerable condition `nstrips > TIFFhowmany_32(td->td_imagelength, rowsperstrip)`.

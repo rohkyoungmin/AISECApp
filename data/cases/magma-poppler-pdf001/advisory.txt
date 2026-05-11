@@ -1,0 +1,1 @@
+Magma poppler bug PDF001 is modeled by a patch touching poppler/SplashOutputDev.cc. The Magma canary marks the vulnerable condition `MAGMA_OR(surface_width == 0, surface_height == 0)`.

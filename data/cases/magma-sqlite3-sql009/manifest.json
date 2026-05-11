@@ -1,0 +1,28 @@
+{
+  "case_id": "magma-sqlite3-sql009",
+  "cve_id": "MAGMA-SQL009",
+  "project": "sqlite3",
+  "language": "C",
+  "source": {
+    "benchmark": "Magma",
+    "target": "sqlite3",
+    "bug_id": "SQL009",
+    "patch_path": "external/magma/targets/sqlite3/patches/bugs/SQL009.patch"
+  },
+  "binary": {
+    "path": "vulnerable/binary",
+    "architecture": "x86_64",
+    "compiler": "magma-default",
+    "optimization": "unknown"
+  },
+  "inputs": {
+    "advisory": "advisory.txt",
+    "patch_diff": "patch.diff",
+    "decompiler_excerpt": "vulnerable/decompiler.txt"
+  },
+  "labels": {
+    "expected_verdict": "vulnerable",
+    "vulnerable_function": "magma_canary_context",
+    "vulnerable_address": "source:src/vdbemem.c:1226:magma_canary_context"
+  }
+}

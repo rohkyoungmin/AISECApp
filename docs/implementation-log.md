@@ -340,3 +340,53 @@ PYTHONPATH=src python3 -m unittest discover -s tests -v
 - placeholder binary를 실제 vulnerable/fixed binary로 교체
 - objdump 또는 decompiler output 생성 자동화
 - verifier가 confidence 외에 evidence coverage를 더 세밀하게 평가하도록 개선
+
+## 2026-05-11 KST - Magma patch dataset skeleton 전체 생성
+
+### 구현 결과
+
+- `src/aisec_app/magma_import.py`를 추가했다.
+  - `external/magma/targets/*/patches/bugs/*.patch`를 읽어 `data/cases/magma-{target}-{bug}/` 구조로 변환한다.
+  - 기존 case는 기본적으로 덮어쓰지 않는다.
+  - `--overwrite`를 주면 재생성할 수 있다.
+- `external/magma`에서 발견된 bug patch는 총 138개였다.
+- 기존 수동 case `magma-libpng-png003`을 제외하고 137개 case skeleton을 새로 생성했다.
+- 현재 `data/cases` 전체 case 수는 demo case 포함 139개다.
+- 이전에 만들다 중단한 source upload API 초안 파일은 제거했다. LLM/API 연결은 dataset baseline 이후 다시 설계한다.
+
+### 실행 방법
+
+```bash
+PYTHONPATH=src python3 -m aisec_app.magma_import external/magma data/cases
+PYTHONPATH=src python3 -m aisec_app.magma_import external/magma data/cases --overwrite
+```
+
+### 검증 결과
+
+```text
+PYTHONPATH=src python3 -m unittest discover -s tests -v
+10 tests passed
+```
+
+Evaluation baseline:
+
+```text
+Cases: 139
+Detection Accuracy: 2/139 (1.44%)
+Function Localization Accuracy: 2/139 (1.44%)
+Verifier Status:
+  needs_review: 0
+  pass: 2
+  reject: 137
+```
+
+### 해석
+
+현재 deterministic pipeline은 demo case와 `magma-libpng-png003`만 맞추고 나머지 Magma skeleton case는 대부분 reject한다. 이 낮은 점수는 실패가 아니라, Claude Sonnet 기반 agent를 붙였을 때 비교할 baseline으로 사용한다.
+
+### 남은 한계
+
+- 생성된 Magma case 대부분은 source-level patch 기반 skeleton이다.
+- `vulnerable/binary`와 `fixed/binary`는 placeholder이다.
+- 실제 Magma build artifact와 decompiler/static-analysis output은 다음 단계에서 교체해야 한다.
+- Claude Sonnet API를 붙이기 전까지는 semantic reasoning 성능이 제한적이다.

@@ -1,0 +1,1 @@
+Magma libxml2 bug XML005 is modeled by a patch touching xmlmemory.c. The Magma canary marks the vulnerable condition `size > (MAX_SIZE_T - RESERVE_SIZE)`.

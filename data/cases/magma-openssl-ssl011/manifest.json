@@ -1,0 +1,28 @@
+{
+  "case_id": "magma-openssl-ssl011",
+  "cve_id": "MAGMA-SSL011",
+  "project": "openssl",
+  "language": "C",
+  "source": {
+    "benchmark": "Magma",
+    "target": "openssl",
+    "bug_id": "SSL011",
+    "patch_path": "external/magma/targets/openssl/patches/bugs/SSL011.patch"
+  },
+  "binary": {
+    "path": "vulnerable/binary",
+    "architecture": "x86_64",
+    "compiler": "magma-default",
+    "optimization": "unknown"
+  },
+  "inputs": {
+    "advisory": "advisory.txt",
+    "patch_diff": "patch.diff",
+    "decompiler_excerpt": "vulnerable/decompiler.txt"
+  },
+  "labels": {
+    "expected_verdict": "vulnerable",
+    "vulnerable_function": "magma_canary_context",
+    "vulnerable_address": "source:crypto/pkcs7/pk7_doit.c:430:magma_canary_context"
+  }
+}

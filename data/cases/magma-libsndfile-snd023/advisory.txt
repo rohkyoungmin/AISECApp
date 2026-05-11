@@ -1,0 +1,1 @@
+Magma libsndfile bug SND023 is modeled by a patch touching src/ulaw.c. The Magma canary marks the vulnerable condition `ptr[i] == INT_MIN`.

@@ -1,0 +1,1 @@
+Magma lua bug LUA003 is modeled by a patch touching liolib.c. The Magma canary marks the vulnerable condition `!l_checkmodep(mode)`.

@@ -1,0 +1,1 @@
+Magma libpng bug PNG002 is modeled by a patch touching png.c, png.h, pngerror.c. The Magma canary marks the vulnerable condition `(image->flags & PNG_IMAGE_FLAG_INVALID) != 0`.

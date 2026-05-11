@@ -1,0 +1,28 @@
+{
+  "case_id": "magma-openssl-ssl007",
+  "cve_id": "MAGMA-SSL007",
+  "project": "openssl",
+  "language": "C",
+  "source": {
+    "benchmark": "Magma",
+    "target": "openssl",
+    "bug_id": "SSL007",
+    "patch_path": "external/magma/targets/openssl/patches/bugs/SSL007.patch"
+  },
+  "binary": {
+    "path": "vulnerable/binary",
+    "architecture": "x86_64",
+    "compiler": "magma-default",
+    "optimization": "unknown"
+  },
+  "inputs": {
+    "advisory": "advisory.txt",
+    "patch_diff": "patch.diff",
+    "decompiler_excerpt": "vulnerable/decompiler.txt"
+  },
+  "labels": {
+    "expected_verdict": "vulnerable",
+    "vulnerable_function": "MDC2_Update",
+    "vulnerable_address": "source:crypto/mdc2/mdc2dgst.c:12:MDC2_Update"
+  }
+}

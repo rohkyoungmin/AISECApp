@@ -1,0 +1,1 @@
+Magma poppler bug PDF014 is modeled by a patch touching poppler/XRef.cc. The Magma canary marks the vulnerable condition `i >= capacity`.

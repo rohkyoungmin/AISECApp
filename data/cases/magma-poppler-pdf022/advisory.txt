@@ -1,0 +1,1 @@
+Magma poppler bug PDF022 is modeled by a patch touching poppler/GfxState.cc. The Magma canary marks the vulnerable condition `MAGMA_AND(alt->getMode() == csDeviceGray, name->cmp("Black") == 0)`.

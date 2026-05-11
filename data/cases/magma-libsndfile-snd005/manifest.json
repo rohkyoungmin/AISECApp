@@ -1,0 +1,28 @@
+{
+  "case_id": "magma-libsndfile-snd005",
+  "cve_id": "MAGMA-SND005",
+  "project": "libsndfile",
+  "language": "C",
+  "source": {
+    "benchmark": "Magma",
+    "target": "libsndfile",
+    "bug_id": "SND005",
+    "patch_path": "external/magma/targets/libsndfile/patches/bugs/SND005.patch"
+  },
+  "binary": {
+    "path": "vulnerable/binary",
+    "architecture": "x86_64",
+    "compiler": "magma-default",
+    "optimization": "unknown"
+  },
+  "inputs": {
+    "advisory": "advisory.txt",
+    "patch_diff": "patch.diff",
+    "decompiler_excerpt": "vulnerable/decompiler.txt"
+  },
+  "labels": {
+    "expected_verdict": "vulnerable",
+    "vulnerable_function": "aiff_read_chanmap",
+    "vulnerable_address": "source:src/aiff.c:1773:aiff_read_chanmap"
+  }
+}

@@ -1,0 +1,1 @@
+Magma openssl bug SSL007 is modeled by a patch touching crypto/mdc2/mdc2dgst.c. The Magma canary marks the vulnerable condition `SIZE_MAX - len < i`.

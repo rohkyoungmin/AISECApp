@@ -1,0 +1,1 @@
+Magma openssl bug SSL013 is modeled by a patch touching crypto/rsa/rsa_ameth.c. The Magma canary marks the vulnerable condition `magma_int < 0`.

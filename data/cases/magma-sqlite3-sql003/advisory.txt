@@ -1,0 +1,1 @@
+Magma sqlite3 bug SQL003 is modeled by a patch touching src/select.c. The Magma canary marks the vulnerable condition `(p->selFlags & SF_Distinct)!=0`.

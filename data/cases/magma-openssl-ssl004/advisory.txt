@@ -1,0 +1,1 @@
+Magma openssl bug SSL004 is modeled by a patch touching crypto/x509/x509_obj.c. The Magma canary marks the vulnerable condition `num > (int)sizeof(ebcdic_buf)`.

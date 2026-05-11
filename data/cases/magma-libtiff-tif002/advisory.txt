@@ -1,0 +1,1 @@
+Magma libtiff bug TIF002 is modeled by a patch touching libtiff/tif_pixarlog.c. The Magma canary marks the vulnerable condition `(tmsize_t)sp->stream.avail_out > sp->tbuf_size`.

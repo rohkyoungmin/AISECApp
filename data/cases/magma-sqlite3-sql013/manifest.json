@@ -1,0 +1,28 @@
+{
+  "case_id": "magma-sqlite3-sql013",
+  "cve_id": "MAGMA-SQL013",
+  "project": "sqlite3",
+  "language": "C",
+  "source": {
+    "benchmark": "Magma",
+    "target": "sqlite3",
+    "bug_id": "SQL013",
+    "patch_path": "external/magma/targets/sqlite3/patches/bugs/SQL013.patch"
+  },
+  "binary": {
+    "path": "vulnerable/binary",
+    "architecture": "x86_64",
+    "compiler": "magma-default",
+    "optimization": "unknown"
+  },
+  "inputs": {
+    "advisory": "advisory.txt",
+    "patch_diff": "patch.diff",
+    "decompiler_excerpt": "vulnerable/decompiler.txt"
+  },
+  "labels": {
+    "expected_verdict": "vulnerable",
+    "vulnerable_function": "whereLoopAddBtreeIndex",
+    "vulnerable_address": "source:src/where.c:2761:whereLoopAddBtreeIndex"
+  }
+}

@@ -1,0 +1,1 @@
+Magma libsndfile bug SND022 is modeled by a patch touching src/ulaw.c. The Magma canary marks the vulnerable condition `!isfinite(ptr[i])`.

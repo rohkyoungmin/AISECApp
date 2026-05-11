@@ -1,0 +1,1 @@
+Magma lua bug LUA002 is modeled by a patch touching ldebug.c. The Magma canary marks the vulnerable condition `p->lineinfo == NULL`.

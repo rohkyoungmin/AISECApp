@@ -1,0 +1,1 @@
+Magma libpng bug PNG004 is modeled by a patch touching pngrutil.c. The Magma canary marks the vulnerable condition `(row_width * pixel_depth) != (u_int64_t)row_width * pixel_depth`.

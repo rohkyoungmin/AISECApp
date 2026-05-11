@@ -1,0 +1,1 @@
+Magma openssl bug SSL015 is modeled by a patch touching crypto/pkcs7/pk7_doit.c. The Magma canary marks the vulnerable condition `MAGMA_OR(p7 == NULL, p7->d.ptr)`.

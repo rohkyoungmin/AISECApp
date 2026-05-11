@@ -1,0 +1,1 @@
+Magma libtiff bug TIF012 is modeled by a patch touching libtiff/tif_dir.c. The Magma canary marks the vulnerable condition `MAGMA_AND(td->td_transferfunction[0] != NULL, MAGMA_AND(td->td_samplesperpixel - *v > 1, \ + !(td->td_samplesperpixel - td->td_extrasamples > 1)))`.

@@ -1,0 +1,28 @@
+{
+  "case_id": "magma-openssl-ssl009",
+  "cve_id": "MAGMA-SSL009",
+  "project": "openssl",
+  "language": "C",
+  "source": {
+    "benchmark": "Magma",
+    "target": "openssl",
+    "bug_id": "SSL009",
+    "patch_path": "external/magma/targets/openssl/patches/bugs/SSL009.patch"
+  },
+  "binary": {
+    "path": "vulnerable/binary",
+    "architecture": "x86_64",
+    "compiler": "magma-default",
+    "optimization": "unknown"
+  },
+  "inputs": {
+    "advisory": "advisory.txt",
+    "patch_diff": "patch.diff",
+    "decompiler_excerpt": "vulnerable/decompiler.txt"
+  },
+  "labels": {
+    "expected_verdict": "vulnerable",
+    "vulnerable_function": "length_from_afi",
+    "vulnerable_address": "source:crypto/x509/v3_addr.c:84:length_from_afi"
+  }
+}

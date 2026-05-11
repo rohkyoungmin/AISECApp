@@ -1,0 +1,25 @@
+selectExpander @ source:src/select.c:5008:selectExpander
+Magma-derived source-level excerpt for the fixed build.
+MAGMA_ENABLE_FIXES is treated as enabled for this placeholder excerpt.
+
+diff --git a/src/select.c b/src/select.c
+index a9ec1e852..0ce67e935 100644
+--- a/src/select.c
++++ b/src/select.c
+@@ -5008,9 +5008,16 @@ static int selectExpander(Walker *pWalker, Select *p){
+ 
+   /* Process NATURAL keywords, and ON and USING clauses of joins.
+   */
++  if(
++#ifdef MAGMA_ENABLE_FIXES
++     pParse->nErr ||
++#endif
++     db->mallocFailed || sqliteProcessJoin(pParse, p) ){
++      return WRC_Abort;
+   }
++#ifdef MAGMA_ENABLE_CANARIES
++  MAGMA_LOG("%MAGMA_BUG%", pParse->nErr);
++#endif
+ 
+   /* For every "*" that occurs in the column list, insert the names of
+   ** all columns in all tables.  And for every TABLE.* insert the names

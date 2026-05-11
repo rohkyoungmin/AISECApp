@@ -1,0 +1,1 @@
+Magma libxml2 bug XML004 is modeled by a patch touching xzlib.c. The Magma canary marks the vulnerable condition `MAGMA_AND(state->how != GZIP, \ + MAGMA_AND(ret != LZMA_OK, ret != LZMA_STREAM_END))`.

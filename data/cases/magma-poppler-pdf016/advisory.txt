@@ -1,0 +1,1 @@
+Magma poppler bug PDF016 is modeled by a patch touching poppler/Parser.cc. The Magma canary marks the vulnerable condition `MAGMA_OR(num <=0, gen < 0)`.

@@ -1,0 +1,1 @@
+Magma libsndfile bug SND002 is modeled by a patch touching src/sd2.c. The Magma canary marks the vulnerable condition `rsrc.map_offset + 28 > rsrc.rsrc_len`.

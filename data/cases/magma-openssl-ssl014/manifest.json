@@ -1,0 +1,28 @@
+{
+  "case_id": "magma-openssl-ssl014",
+  "cve_id": "MAGMA-SSL014",
+  "project": "openssl",
+  "language": "C",
+  "source": {
+    "benchmark": "Magma",
+    "target": "openssl",
+    "bug_id": "SSL014",
+    "patch_path": "external/magma/targets/openssl/patches/bugs/SSL014.patch"
+  },
+  "binary": {
+    "path": "vulnerable/binary",
+    "architecture": "x86_64",
+    "compiler": "magma-default",
+    "optimization": "unknown"
+  },
+  "inputs": {
+    "advisory": "advisory.txt",
+    "patch_diff": "patch.diff",
+    "decompiler_excerpt": "vulnerable/decompiler.txt"
+  },
+  "labels": {
+    "expected_verdict": "vulnerable",
+    "vulnerable_function": "ASN1_TYPE_cmp",
+    "vulnerable_address": "source:crypto/asn1/a_type.c:71:ASN1_TYPE_cmp"
+  }
+}

@@ -1,0 +1,1 @@
+Magma libxml2 bug XML009 is modeled by a patch touching parser.c. The Magma canary marks the vulnerable condition `m_tmp < 0`.

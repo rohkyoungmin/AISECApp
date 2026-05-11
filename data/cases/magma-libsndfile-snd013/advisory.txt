@@ -1,0 +1,1 @@
+Magma libsndfile bug SND013 is modeled by a patch touching src/common.c. The Magma canary marks the vulnerable condition `psf->header.indx + 1 + (sf_count_t) size > psf->header.len`.

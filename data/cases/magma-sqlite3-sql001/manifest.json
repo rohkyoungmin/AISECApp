@@ -1,0 +1,28 @@
+{
+  "case_id": "magma-sqlite3-sql001",
+  "cve_id": "MAGMA-SQL001",
+  "project": "sqlite3",
+  "language": "C",
+  "source": {
+    "benchmark": "Magma",
+    "target": "sqlite3",
+    "bug_id": "SQL001",
+    "patch_path": "external/magma/targets/sqlite3/patches/bugs/SQL001.patch"
+  },
+  "binary": {
+    "path": "vulnerable/binary",
+    "architecture": "x86_64",
+    "compiler": "magma-default",
+    "optimization": "unknown"
+  },
+  "inputs": {
+    "advisory": "advisory.txt",
+    "patch_diff": "patch.diff",
+    "decompiler_excerpt": "vulnerable/decompiler.txt"
+  },
+  "labels": {
+    "expected_verdict": "vulnerable",
+    "vulnerable_function": "fts5HashEntrySort",
+    "vulnerable_address": "source:ext/fts5/fts5_hash.c:456:fts5HashEntrySort"
+  }
+}

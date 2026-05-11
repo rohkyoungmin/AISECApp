@@ -1,0 +1,80 @@
+phar_parse_pharfile @ source:ext/phar/phar.c:739:phar_parse_pharfile
+Magma-derived source-level excerpt for the fixed build.
+MAGMA_ENABLE_FIXES is treated as enabled for this placeholder excerpt.
+
+diff --git a/ext/phar/phar.c b/ext/phar/phar.c
+index 9b21eb7e2a..387e45c560 100644
+--- a/ext/phar/phar.c
++++ b/ext/phar/phar.c
+@@ -739,13 +739,23 @@ static int phar_parse_pharfile(php_stream *fp, char *fname, size_t fname_len, ch
+ 	buffer = (char *)emalloc(manifest_len);
+ 	savebuf = buffer;
+ 	endbuffer = buffer + manifest_len;
++#ifdef MAGMA_ENABLE_FIXES
+ 	if (manifest_len < MANIFEST_FIXED_LEN || manifest_len != php_stream_read(fp, buffer, manifest_len)) {
+ 		MAPPHAR_FAIL("internal corruption of phar \"%s\" (truncated manifest header)")
+ 	}
+ 
+ 	/* extract the number of entries */
+ 	SAFE_PHAR_GET_32(buffer, endbuffer, manifest_count);
++#else
++	if (manifest_len < 10 || manifest_len != php_stream_read(fp, buffer, manifest_len)) {
++		MAPPHAR_FAIL("internal corruption of phar \"%s\" (truncated manifest header)")
++	}
++
++	PHAR_GET_32(buffer, manifest_count);
++	#ifdef MAGMA_ENABLE_CANARIES
++		MAGMA_LOG("%MAGMA_BUG%",buffer + 4 > endbuffer);
++	#endif
++#endif
+ 
+ 	if (manifest_count == 0) {
+ 		MAPPHAR_FAIL("in phar \"%s\", manifest claims to have zero entries.  Phars must have at least 1 entry");
+@@ -764,8 +774,15 @@ static int phar_parse_pharfile(php_stream *fp, char *fname, size_t fname_len, ch
+ 		}
+ 		return FAILURE;
+ 	}
++#ifdef MAGMA_ENABLE_FIXES
+ 	SAFE_PHAR_GET_32(buffer, endbuffer, manifest_flags);
++#else
++	PHAR_GET_32(buffer, manifest_flags);
++
++	#ifdef MAGMA_ENABLE_CANARIES
++		MAGMA_LOG("%MAGMA_BUG%",buffer + 4 > endbuffer);
++	#endif
++#endif
+@@ -973,13 +990,23 @@ static int phar_parse_pharfile(php_stream *fp, char *fname, size_t fname_len, ch
++#ifdef MAGMA_ENABLE_FIXES
++#else
++	PHAR_GET_32(buffer, manifest_flags);
++	#ifdef MAGMA_ENABLE_CANARIES
++		MAGMA_LOG("%MAGMA_BUG%",buffer + 4 > endbuffer);
++	#endif
++#endif
++#ifdef MAGMA_ENABLE_FIXES
++	if (manifest_len < MANIFEST_FIXED_LEN + tmp_len)
++#else
++	if (manifest_len < 10 + tmp_len)
++#endif
++	{
+@@ -1017,7 +1044,11 @@ static int phar_parse_pharfile(php_stream *fp, char *fname, size_t fname_len, ch
++#ifdef MAGMA_ENABLE_FIXES
++#else
++	if (manifest_count > ((manifest_len - 10 - tmp_len) / (5 * 4 + 1))) {
++#endif
+@@ -1026,11 +1058,26 @@ static int phar_parse_pharfile(php_stream *fp, char *fname, size_t fname_len, ch
++#ifdef MAGMA_ENABLE_FIXES
++#else
++	PHAR_GET_32(buffer, len);
++	#ifdef MAGMA_ENABLE_CANARIES
++		MAGMA_LOG("%MAGMA_BUG%",buffer + 4 > endbuffer);
++	#endif
++#endif
++
++		#ifdef MAGMA_ENABLE_FIXES
++		#else
++			PHAR_GET_32(buffer, len);
++			#ifdef MAGMA_ENABLE_CANARIES
++				MAGMA_LOG("%MAGMA_BUG%",buffer + 4 > endbuffer);
++			#endif
++		#endif

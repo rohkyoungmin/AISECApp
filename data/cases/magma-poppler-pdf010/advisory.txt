@@ -1,0 +1,1 @@
+Magma poppler bug PDF010 is modeled by a patch touching poppler/SplashOutputDev.cc. The Magma canary marks the vulnerable condition `t3GlyphStack == nullptr`.

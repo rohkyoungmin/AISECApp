@@ -1,0 +1,1 @@
+Magma sqlite3 bug SQL008 is modeled by a patch touching src/shell.c.in. The Magma canary marks the vulnerable condition `azCol==0`.

@@ -1,0 +1,1 @@
+Magma lua bug LUA004 is modeled by a patch touching ldebug.c, ldo.c, lstate.c. The Magma canary marks the vulnerable condition `pcRel(L->oldpc, p) < 0`.

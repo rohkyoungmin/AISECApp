@@ -1,0 +1,1 @@
+Magma libpng bug PNG006 is modeled by a patch touching png.c, pngrutil.c. The Magma canary marks the vulnerable condition `MAGMA_AND(info_ptr->eXIf_buf != NULL, (mask & info_ptr->free_me & PNG_FREE_EXIF) == 0)`.

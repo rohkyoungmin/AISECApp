@@ -1,0 +1,1 @@
+Magma poppler bug PDF004 is modeled by a patch touching splash/SplashXPathScanner.cc. The Magma canary marks the vulnerable condition `MAGMA_OR(intersectionIndex < 0, (unsigned)intersectionIndex >= allIntersections.size())`.

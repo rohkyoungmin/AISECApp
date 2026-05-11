@@ -1,0 +1,1 @@
+Magma openssl bug SSL009 is modeled by a patch touching crypto/x509/v3_addr.c. The Magma canary marks the vulnerable condition `MAGMA_AND(f != NULL, \ + MAGMA_AND(f->addressFamily != NULL, \ + MAGMA_AND(f->addressFamily->data != NULL, \ + f->addressFamily->length < 2))) +`.

@@ -1,0 +1,1 @@
+Magma libsndfile bug SND004 is modeled by a patch touching src/file_io.c. The Magma canary marks the vulnerable condition `MAGMA_OR(bytes == 0, items == 0)`.

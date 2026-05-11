@@ -1,0 +1,1 @@
+Magma php bug PHP005 is modeled by a patch touching ext/iconv/iconv.c. The Magma canary marks the vulnerable condition `str_left <= 1`.

@@ -1,0 +1,1 @@
+Magma php bug PHP010 is modeled by a patch touching ext/exif/exif.c. The Magma canary marks the vulnerable condition `MAGMA_AND(MAGMA_OR(pos > SIZE_MAX - length, length > ImageInfo->Thumbnail.size), pos < ImageInfo->Thumbnail.size - length)`.

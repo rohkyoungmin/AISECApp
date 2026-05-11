@@ -1,0 +1,1 @@
+Magma sqlite3 bug SQL001 is modeled by a patch touching ext/fts5/fts5_hash.c. The Magma canary marks the vulnerable condition `MAGMA_AND(pTerm != 0, pIter->nKey+1 < nTerm)`.

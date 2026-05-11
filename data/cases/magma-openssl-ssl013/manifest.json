@@ -1,0 +1,28 @@
+{
+  "case_id": "magma-openssl-ssl013",
+  "cve_id": "MAGMA-SSL013",
+  "project": "openssl",
+  "language": "C",
+  "source": {
+    "benchmark": "Magma",
+    "target": "openssl",
+    "bug_id": "SSL013",
+    "patch_path": "external/magma/targets/openssl/patches/bugs/SSL013.patch"
+  },
+  "binary": {
+    "path": "vulnerable/binary",
+    "architecture": "x86_64",
+    "compiler": "magma-default",
+    "optimization": "unknown"
+  },
+  "inputs": {
+    "advisory": "advisory.txt",
+    "patch_diff": "patch.diff",
+    "decompiler_excerpt": "vulnerable/decompiler.txt"
+  },
+  "labels": {
+    "expected_verdict": "vulnerable",
+    "vulnerable_function": "rsa_item_verify",
+    "vulnerable_address": "source:crypto/rsa/rsa_ameth.c:789:rsa_item_verify"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "case_id": "magma-libpng-png007",
+  "cve_id": "MAGMA-PNG007",
+  "project": "libpng",
+  "language": "C",
+  "source": {
+    "benchmark": "Magma",
+    "target": "libpng",
+    "bug_id": "PNG007",
+    "patch_path": "external/magma/targets/libpng/patches/bugs/PNG007.patch"
+  },
+  "binary": {
+    "path": "vulnerable/binary",
+    "architecture": "x86_64",
+    "compiler": "magma-default",
+    "optimization": "unknown"
+  },
+  "inputs": {
+    "advisory": "advisory.txt",
+    "patch_diff": "patch.diff",
+    "decompiler_excerpt": "vulnerable/decompiler.txt"
+  },
+  "labels": {
+    "expected_verdict": "vulnerable",
+    "vulnerable_function": "png_read_transform_info",
+    "vulnerable_address": "source:pngrtran.c:1959:png_read_transform_info"
+  }
+}

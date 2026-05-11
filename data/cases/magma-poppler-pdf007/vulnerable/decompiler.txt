@@ -1,0 +1,24 @@
+magma_canary_context @ source:poppler/Stream.cc:496:magma_canary_context
+Magma-derived source-level excerpt for the vulnerable build.
+MAGMA_ENABLE_FIXES is treated as disabled for this placeholder excerpt.
+MAGMA_BUG condition: readChars < 0
+
+diff --git a/poppler/Stream.cc b/poppler/Stream.cc
+index 99ccbd2..581dcd5 100644
+--- a/poppler/Stream.cc
++++ b/poppler/Stream.cc
+@@ -496,9 +496,14 @@ unsigned char *ImageStream::getLine() {
+     }
+    
+     int readChars = str->doGetChars(inputLineSize, inputLine);
++#ifdef MAGMA_ENABLE_FIXES
+     if (unlikely(readChars == -1)) {
+         readChars = 0;
+     }
++#endif
++#ifdef MAGMA_ENABLE_CANARIES
++    MAGMA_LOG("%MAGMA_BUG%", readChars < 0);
++#endif
+     for (; readChars < inputLineSize; readChars++)
+         inputLine[readChars] = EOF;
+     if (nBits == 1) {

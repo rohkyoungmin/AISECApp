@@ -1,0 +1,1 @@
+Magma libsndfile bug SND005 is modeled by a patch touching src/aiff.c. The Magma canary marks the vulnerable condition `psf->sf.channels > (layout_tag & 0xffff)`.

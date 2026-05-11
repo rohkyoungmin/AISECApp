@@ -1,0 +1,1 @@
+Magma sqlite3 bug SQL011 is modeled by a patch touching ext/rtree/rtree.c. The Magma canary marks the vulnerable condition `pRtree->iNodeSize<(512-64)`.

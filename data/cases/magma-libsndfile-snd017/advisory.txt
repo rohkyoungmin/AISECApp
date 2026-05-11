@@ -1,0 +1,1 @@
+Magma libsndfile bug SND017 is modeled by a patch touching src/wavlike.c. The Magma canary marks the vulnerable condition `k >= psf->sf.channels`.

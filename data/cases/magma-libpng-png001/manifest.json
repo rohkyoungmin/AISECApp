@@ -1,0 +1,28 @@
+{
+  "case_id": "magma-libpng-png001",
+  "cve_id": "MAGMA-PNG001",
+  "project": "libpng",
+  "language": "C",
+  "source": {
+    "benchmark": "Magma",
+    "target": "libpng",
+    "bug_id": "PNG001",
+    "patch_path": "external/magma/targets/libpng/patches/bugs/PNG001.patch"
+  },
+  "binary": {
+    "path": "vulnerable/binary",
+    "architecture": "x86_64",
+    "compiler": "magma-default",
+    "optimization": "unknown"
+  },
+  "inputs": {
+    "advisory": "advisory.txt",
+    "patch_diff": "patch.diff",
+    "decompiler_excerpt": "vulnerable/decompiler.txt"
+  },
+  "labels": {
+    "expected_verdict": "vulnerable",
+    "vulnerable_function": "png_check_chunk_length",
+    "vulnerable_address": "source:pngrutil.c:3163:png_check_chunk_length"
+  }
+}

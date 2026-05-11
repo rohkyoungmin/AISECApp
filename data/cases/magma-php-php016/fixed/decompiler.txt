@@ -1,0 +1,76 @@
+phar_verify_signature @ source:ext/phar/util.c:1599:phar_verify_signature
+Magma-derived source-level excerpt for the fixed build.
+MAGMA_ENABLE_FIXES is treated as enabled for this placeholder excerpt.
+
+diff --git a/ext/phar/util.c b/ext/phar/util.c
+index 53982b0f85..296a8767e5 100644
+--- a/ext/phar/util.c
++++ b/ext/phar/util.c
+@@ -1599,13 +1599,18 @@ int phar_verify_signature(php_stream *fp, size_t end_of_phar, uint32_t sig_type,
+ 		case PHAR_SIG_SHA512: {
+ 			unsigned char digest[64];
+ 			PHP_SHA512_CTX context;
++		#ifdef MAGMA_ENABLE_FIXES
+ 			if (sig_len < sizeof(digest)) {
+ 				if (error) {
+ 					spprintf(error, 0, "broken signature");
+ 				}
+ 				return FAILURE;
+ 			}
++		#else
++			#ifdef MAGMA_ENABLE_CANARIES
++				MAGMA_LOG("%MAGMA_BUG%",sig_len < sizeof(digest));
++			#endif
++		#endif
+ 
+ 			PHP_SHA512Init(&context);
+ 			read_len = end_of_phar;
+@@ -1639,13 +1644,18 @@ int phar_verify_signature(php_stream *fp, size_t end_of_phar, uint32_t sig_type,
+ 		case PHAR_SIG_SHA256: {
+ 			unsigned char digest[32];
+ 			PHP_SHA256_CTX context;
++		#ifdef MAGMA_ENABLE_FIXES
+ 			if (sig_len < sizeof(digest)) {
+ 				if (error) {
+ 					spprintf(error, 0, "broken signature");
+ 				}
+ 				return FAILURE;
+ 			}
++			#else
++			#ifdef MAGMA_ENABLE_CANARIES
++				MAGMA_LOG("%MAGMA_BUG%",sig_len < sizeof(digest));
++			#endif
++		#endif
+ 
+@@ -1679,13 +1689,19 @@ int phar_verify_signature(php_stream *fp, size_t end_of_phar, uint32_t sig_type,
++		#ifdef MAGMA_ENABLE_FIXES
++			#else
++			#ifdef MAGMA_ENABLE_CANARIES
++				MAGMA_LOG("%MAGMA_BUG%",sig_len < sizeof(digest));
++			#endif
++		#endif
++
+@@ -1719,13 +1735,19 @@ int phar_verify_signature(php_stream *fp, size_t end_of_phar, uint32_t sig_type,
++		#ifdef  MAGMA_ENABLE_FIXES
++			#else
++			#ifdef MAGMA_ENABLE_CANARIES
++				MAGMA_LOG("%MAGMA_BUG%",sig_len < sizeof(digest));
++			#endif
++		#endif
++
+diff --git a/ext/phar/zip.c b/ext/phar/zip.c
+index e086354b11..530fd2cd2f 100644
+--- a/ext/phar/zip.c
++++ b/ext/phar/zip.c
+@@ -425,11 +425,22 @@ foundit:
++		#ifdef MAGMA_ENABLE_FIXES
++		#else
++			if (read != entry.uncompressed_filesize) {
++				php_stream_close(sigfile);
++				efree(sig);
++				PHAR_ZIP_FAIL("signature cannot be read");
++			}
++			#ifdef MAGMA_ENABLE_CANARIES
++				MAGMA_LOG("%MAGMA_BUG%",read <= 8);
++			#endif
++		#endif

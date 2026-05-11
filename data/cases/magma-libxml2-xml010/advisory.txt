@@ -1,0 +1,1 @@
+Magma libxml2 bug XML010 is modeled by a patch touching parser.c. The Magma canary marks the vulnerable condition `MAGMA_AND(m_tmp == 1, \ + MAGMA_AND((ctxt->options & XML_PARSE_NOENT) == 0, \ + MAGMA_AND((ctxt->options & XML_PARSE_DTDVALID) == 0, \ + ctxt->validate == 0)))`.

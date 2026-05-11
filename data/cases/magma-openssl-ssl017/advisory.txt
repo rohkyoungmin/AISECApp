@@ -1,0 +1,1 @@
+Magma openssl bug SSL017 is modeled by a patch touching crypto/x509/x509_vfy.c. The Magma canary marks the vulnerable condition `best_crl == NULL`.

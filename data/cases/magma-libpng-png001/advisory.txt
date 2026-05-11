@@ -1,0 +1,1 @@
+Magma libpng bug PNG001 is modeled by a patch touching pngrutil.c. The Magma canary marks the vulnerable condition `row_factor_l == ((size_t)1 << (sizeof(png_uint_32) * 8))`.

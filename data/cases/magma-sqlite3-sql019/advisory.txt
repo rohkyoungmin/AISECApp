@@ -1,0 +1,1 @@
+Magma sqlite3 bug SQL019 is modeled by a patch touching src/printf.c. The Magma canary marks the vulnerable condition `MAX(e2,0) + precision > (((int)-1)&0x7fffffff) - 15 - width`.

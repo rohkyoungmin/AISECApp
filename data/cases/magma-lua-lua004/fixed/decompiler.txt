@@ -1,0 +1,84 @@
+lua_sethook @ source:ldebug.c:130:lua_sethook
+Magma-derived source-level excerpt for the fixed build.
+MAGMA_ENABLE_FIXES is treated as enabled for this placeholder excerpt.
+
+diff --git a/ldebug.c b/ldebug.c
+index 8e3657a9..a4b64532 100644
+--- a/ldebug.c
++++ b/ldebug.c
+@@ -130,6 +130,10 @@ LUA_API void lua_sethook (lua_State *L, lua_Hook func, int mask, int count) {
+     mask = 0;
+     func = NULL;
+   }
++#ifndef MAGMA_ENABLE_FIXES
++  if (isLua(L->ci))
++    L->oldpc = L->ci->u.l.savedpc;
++#endif
+   L->hook = func;
+   L->basehookcount = count;
+   resethookcount(L);
+@@ -830,7 +834,9 @@ static int changedline (const Proto *p, int oldpc, int newpc) {
+ int luaG_traceexec (lua_State *L, const Instruction *pc) {
+   CallInfo *ci = L->ci;
+   lu_byte mask = L->hookmask;
++#ifdef MAGMA_ENABLE_FIXES
+   const Proto *p = ci_func(ci)->p;
++#endif
+   int counthook;
+   if (!(mask & (LUA_MASKLINE | LUA_MASKCOUNT))) {  /* no hooks? */
+     ci->u.l.trap = 0;  /* don't need to stop again */
+@@ -852,15 +858,32 @@ int luaG_traceexec (lua_State *L, const Instruction *pc) {
+   if (counthook)
+     luaD_hook(L, LUA_HOOKCOUNT, -1, 0, 0);  /* call count hook */
+   if (mask & LUA_MASKLINE) {
++#ifdef MAGMA_ENABLE_FIXES
+     /* 'L->oldpc' may be invalid; use zero in this case */
+     int oldpc = (L->oldpc < p->sizecode) ? L->oldpc : 0;
++#else
++    const Proto *p = ci_func(ci)->p;
++#endif
+     int npci = pcRel(pc, p);
++#ifdef MAGMA_ENABLE_FIXES
+     if (npci <= oldpc ||  /* call hook when jump back (loop), */
+         changedline(p, oldpc, npci)) {  /* or when enter new line */
++#else
++#ifdef MAGMA_ENABLE_CANARIES
++    MAGMA_LOG("%MAGMA_BUG%", pcRel(L->oldpc, p) < 0);
++#endif
++    if (npci == 0 ||
++        pc <= L->oldpc ||
++        changedline(p, pcRel(L->oldpc, p), npci)) {
++#endif
++#ifdef MAGMA_ENABLE_FIXES
++#else
++    L->oldpc = pc;
++#endif
+diff --git a/ldo.c b/ldo.c
+index 7135079b..2589be9b 100644
+--- a/ldo.c
++++ b/ldo.c
+@@ -368,7 +368,11 @@ static void rethook (lua_State *L, CallInfo *ci, int nres) {
++#ifdef MAGMA_ENABLE_FIXES
++#else
++      Proto *p = clLvalue(s2v(ci->func))->p;
++#endif
+@@ -377,8 +381,13 @@ static void rethook (lua_State *L, CallInfo *ci, int nres) {
++#ifdef MAGMA_ENABLE_FIXES
++#else
++  if (isLua(ci->previous))
++    L->oldpc = ci->previous->u.l.savedpc;
++#endif
+diff --git a/lstate.c b/lstate.c
+index c5e3b437..07524a8e 100644
+--- a/lstate.c
++++ b/lstate.c
+@@ -262,7 +262,9 @@ static void preinit_thread (lua_State *L, global_State *g) {
++#ifdef ENABLE_MAGMA_FIXES
++#endif
+diff --git a/lstate.h b/lstate.h
+index c1283bb6..bc0eadc4 100644
+--- a/lstate.h
++++ b/lstate.h
+@@ -309,6 +309,9 @@ struct lua_State {
++#ifndef MAGMA_ENABLE_FIXES
++  const Instruction *oldpc;

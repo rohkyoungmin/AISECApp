@@ -1,0 +1,1 @@
+Magma sqlite3 bug SQL005 is modeled by a patch touching ext/misc/zipfile.c. The Magma canary marks the vulnerable condition `zPath == 0`.

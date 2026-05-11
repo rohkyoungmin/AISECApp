@@ -1,0 +1,28 @@
+{
+  "case_id": "magma-libtiff-tif006",
+  "cve_id": "MAGMA-TIF006",
+  "project": "libtiff",
+  "language": "C",
+  "source": {
+    "benchmark": "Magma",
+    "target": "libtiff",
+    "bug_id": "TIF006",
+    "patch_path": "external/magma/targets/libtiff/patches/bugs/TIF006.patch"
+  },
+  "binary": {
+    "path": "vulnerable/binary",
+    "architecture": "x86_64",
+    "compiler": "magma-default",
+    "optimization": "unknown"
+  },
+  "inputs": {
+    "advisory": "advisory.txt",
+    "patch_diff": "patch.diff",
+    "decompiler_excerpt": "vulnerable/decompiler.txt"
+  },
+  "labels": {
+    "expected_verdict": "vulnerable",
+    "vulnerable_function": "PixarLogClose",
+    "vulnerable_address": "source:libtiff/tif_pixarlog.c:1265:PixarLogClose"
+  }
+}

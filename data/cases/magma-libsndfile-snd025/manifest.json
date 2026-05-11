@@ -1,0 +1,28 @@
+{
+  "case_id": "magma-libsndfile-snd025",
+  "cve_id": "MAGMA-SND025",
+  "project": "libsndfile",
+  "language": "C",
+  "source": {
+    "benchmark": "Magma",
+    "target": "libsndfile",
+    "bug_id": "SND025",
+    "patch_path": "external/magma/targets/libsndfile/patches/bugs/SND025.patch"
+  },
+  "binary": {
+    "path": "vulnerable/binary",
+    "architecture": "x86_64",
+    "compiler": "magma-default",
+    "optimization": "unknown"
+  },
+  "inputs": {
+    "advisory": "advisory.txt",
+    "patch_diff": "patch.diff",
+    "decompiler_excerpt": "vulnerable/decompiler.txt"
+  },
+  "labels": {
+    "expected_verdict": "vulnerable",
+    "vulnerable_function": "wav_write_header",
+    "vulnerable_address": "source:src/wav.c:1151:wav_write_header"
+  }
+}

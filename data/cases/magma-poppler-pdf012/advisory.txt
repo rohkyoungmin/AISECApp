@@ -1,0 +1,1 @@
+Magma poppler bug PDF012 is modeled by a patch touching poppler/Parser.cc. The Magma canary marks the vulnerable condition `pos > LLONG_MAX - length`.

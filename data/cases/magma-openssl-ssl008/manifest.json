@@ -1,0 +1,28 @@
+{
+  "case_id": "magma-openssl-ssl008",
+  "cve_id": "MAGMA-SSL008",
+  "project": "openssl",
+  "language": "C",
+  "source": {
+    "benchmark": "Magma",
+    "target": "openssl",
+    "bug_id": "SSL008",
+    "patch_path": "external/magma/targets/openssl/patches/bugs/SSL008.patch"
+  },
+  "binary": {
+    "path": "vulnerable/binary",
+    "architecture": "x86_64",
+    "compiler": "magma-default",
+    "optimization": "unknown"
+  },
+  "inputs": {
+    "advisory": "advisory.txt",
+    "patch_diff": "patch.diff",
+    "decompiler_excerpt": "vulnerable/decompiler.txt"
+  },
+  "labels": {
+    "expected_verdict": "vulnerable",
+    "vulnerable_function": "tls_construct_cke_dhe",
+    "vulnerable_address": "source:ssl/statem/statem_clnt.c:3051:tls_construct_cke_dhe"
+  }
+}

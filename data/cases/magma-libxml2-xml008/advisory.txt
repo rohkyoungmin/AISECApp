@@ -1,0 +1,1 @@
+Magma libxml2 bug XML008 is modeled by a patch touching parser.c. The Magma canary marks the vulnerable condition `ctxt->instate == XML_PARSER_EOF`.

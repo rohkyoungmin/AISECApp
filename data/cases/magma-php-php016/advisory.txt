@@ -1,0 +1,1 @@
+Magma php bug PHP016 is modeled by a patch touching ext/phar/util.c, ext/phar/zip.c. The Magma canary marks the vulnerable condition `sig_len < sizeof(digest)`.

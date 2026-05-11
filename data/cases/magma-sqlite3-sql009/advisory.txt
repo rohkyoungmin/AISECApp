@@ -1,0 +1,1 @@
+Magma sqlite3 bug SQL009 is modeled by a patch touching src/vdbemem.c. The Magma canary marks the vulnerable condition `ExpandBlob(pVal)`.

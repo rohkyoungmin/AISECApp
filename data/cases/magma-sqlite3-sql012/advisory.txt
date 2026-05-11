@@ -1,0 +1,1 @@
+Magma sqlite3 bug SQL012 is modeled by a patch touching src/pragma.c. The Magma canary marks the vulnerable condition `sqlite3VdbeGetOp(v,-1)->opcode!=OP_Column`.

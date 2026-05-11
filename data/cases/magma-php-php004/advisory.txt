@@ -1,0 +1,1 @@
+Magma php bug PHP004 is modeled by a patch touching ext/exif/exif.c. The Magma canary marks the vulnerable condition `(dir_start - value_ptr) > value_len - (2+NumDirEntries*12)`.

@@ -1,0 +1,1 @@
+Magma libxml2 bug XML002 is modeled by a patch touching valid.c. The Magma canary marks the vulnerable condition `1`.

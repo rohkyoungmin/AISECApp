@@ -1,0 +1,1 @@
+Magma libpng bug PNG005 is modeled by a patch touching png.c, pngrutil.c. The Magma canary marks the vulnerable condition `row_bytes_check < ((png_ptr->width + 7) & ~((png_uint_32)7))`.

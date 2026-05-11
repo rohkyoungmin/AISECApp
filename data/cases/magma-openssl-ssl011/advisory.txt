@@ -1,0 +1,1 @@
+Magma openssl bug SSL011 is modeled by a patch touching crypto/pkcs7/pk7_doit.c. The Magma canary marks the vulnerable condition `MAGMA_AND(data_body == NULL, in_bio == NULL)`.

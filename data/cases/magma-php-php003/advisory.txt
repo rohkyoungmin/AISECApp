@@ -1,0 +1,1 @@
+Magma php bug PHP003 is modeled by a patch touching ext/exif/exif.c. The Magma canary marks the vulnerable condition `MAGMA_AND((bool)data, ImageInfo->Thumbnail.size < 4)`.

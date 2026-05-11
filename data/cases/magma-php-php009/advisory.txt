@@ -1,0 +1,1 @@
+Magma php bug PHP009 is modeled by a patch touching ext/exif/exif.c. The Magma canary marks the vulnerable condition `MAGMA_OR(maker_note->offset == value_len - 1,value_len < 2)`.

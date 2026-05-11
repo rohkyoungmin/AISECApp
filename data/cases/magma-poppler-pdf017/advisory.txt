@@ -1,0 +1,1 @@
+Magma poppler bug PDF017 is modeled by a patch touching fofi/FoFiTrueType.cc. The Magma canary marks the vulnerable condition `length > (int)sizeof(vheaTab)`.

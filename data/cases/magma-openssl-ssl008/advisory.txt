@@ -1,0 +1,1 @@
+Magma openssl bug SSL008 is modeled by a patch touching ssl/statem/statem_clnt.c. The Magma canary marks the vulnerable condition `ckey == NULL`.

@@ -1,0 +1,28 @@
+{
+  "case_id": "magma-libxml2-xml014",
+  "cve_id": "MAGMA-XML014",
+  "project": "libxml2",
+  "language": "C",
+  "source": {
+    "benchmark": "Magma",
+    "target": "libxml2",
+    "bug_id": "XML014",
+    "patch_path": "external/magma/targets/libxml2/patches/bugs/XML014.patch"
+  },
+  "binary": {
+    "path": "vulnerable/binary",
+    "architecture": "x86_64",
+    "compiler": "magma-default",
+    "optimization": "unknown"
+  },
+  "inputs": {
+    "advisory": "advisory.txt",
+    "patch_diff": "patch.diff",
+    "decompiler_excerpt": "vulnerable/decompiler.txt"
+  },
+  "labels": {
+    "expected_verdict": "vulnerable",
+    "vulnerable_function": "htmlParseName",
+    "vulnerable_address": "source:HTMLparser.c:2473:htmlParseName"
+  }
+}

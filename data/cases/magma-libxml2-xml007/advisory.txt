@@ -1,0 +1,1 @@
+Magma libxml2 bug XML007 is modeled by a patch touching HTMLparser.c, parser.c. The Magma canary marks the vulnerable condition `avail != (in->end - in->cur)`.

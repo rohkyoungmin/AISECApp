@@ -1,0 +1,1 @@
+Magma poppler bug PDF018 is modeled by a patch touching poppler/Annot.cc. The Magma canary marks the vulnerable condition `!path`.

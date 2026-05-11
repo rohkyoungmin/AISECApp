@@ -1,0 +1,28 @@
+{
+  "case_id": "magma-sqlite3-sql015",
+  "cve_id": "MAGMA-SQL015",
+  "project": "sqlite3",
+  "language": "C",
+  "source": {
+    "benchmark": "Magma",
+    "target": "sqlite3",
+    "bug_id": "SQL015",
+    "patch_path": "external/magma/targets/sqlite3/patches/bugs/SQL015.patch"
+  },
+  "binary": {
+    "path": "vulnerable/binary",
+    "architecture": "x86_64",
+    "compiler": "magma-default",
+    "optimization": "unknown"
+  },
+  "inputs": {
+    "advisory": "advisory.txt",
+    "patch_diff": "patch.diff",
+    "decompiler_excerpt": "vulnerable/decompiler.txt"
+  },
+  "labels": {
+    "expected_verdict": "vulnerable",
+    "vulnerable_function": "areDoubleQuotedStringsEnabled",
+    "vulnerable_address": "source:src/resolve.c:182:areDoubleQuotedStringsEnabled"
+  }
+}

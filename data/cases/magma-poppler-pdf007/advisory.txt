@@ -1,0 +1,1 @@
+Magma poppler bug PDF007 is modeled by a patch touching poppler/Stream.cc. The Magma canary marks the vulnerable condition `readChars < 0`.

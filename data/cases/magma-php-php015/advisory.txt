@@ -1,0 +1,1 @@
+Magma php bug PHP015 is modeled by a patch touching ext/phar/phar.c. The Magma canary marks the vulnerable condition `buffer + 28 > endbuffer`.

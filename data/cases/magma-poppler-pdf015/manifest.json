@@ -1,0 +1,28 @@
+{
+  "case_id": "magma-poppler-pdf015",
+  "cve_id": "MAGMA-PDF015",
+  "project": "poppler",
+  "language": "C++",
+  "source": {
+    "benchmark": "Magma",
+    "target": "poppler",
+    "bug_id": "PDF015",
+    "patch_path": "external/magma/targets/poppler/patches/bugs/PDF015.patch"
+  },
+  "binary": {
+    "path": "vulnerable/binary",
+    "architecture": "x86_64",
+    "compiler": "magma-default",
+    "optimization": "unknown"
+  },
+  "inputs": {
+    "advisory": "advisory.txt",
+    "patch_diff": "patch.diff",
+    "decompiler_excerpt": "vulnerable/decompiler.txt"
+  },
+  "labels": {
+    "expected_verdict": "vulnerable",
+    "vulnerable_function": "magma_canary_context",
+    "vulnerable_address": "source:poppler/FileSpec.cc:97:magma_canary_context"
+  }
+}

@@ -1,0 +1,1 @@
+Magma openssl bug SSL005 is modeled by a patch touching ssl/statem/extensions_srvr.c. The Magma canary marks the vulnerable condition `MAGMA_AND(PACKET_remaining(&responder_id_list) > 0, \ + sk_OCSP_RESPID_num(s->ext.ocsp.ids) > 0)`.

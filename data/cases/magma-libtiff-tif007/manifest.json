@@ -1,0 +1,28 @@
+{
+  "case_id": "magma-libtiff-tif007",
+  "cve_id": "MAGMA-TIF007",
+  "project": "libtiff",
+  "language": "C",
+  "source": {
+    "benchmark": "Magma",
+    "target": "libtiff",
+    "bug_id": "TIF007",
+    "patch_path": "external/magma/targets/libtiff/patches/bugs/TIF007.patch"
+  },
+  "binary": {
+    "path": "vulnerable/binary",
+    "architecture": "x86_64",
+    "compiler": "magma-default",
+    "optimization": "unknown"
+  },
+  "inputs": {
+    "advisory": "advisory.txt",
+    "patch_diff": "patch.diff",
+    "decompiler_excerpt": "vulnerable/decompiler.txt"
+  },
+  "labels": {
+    "expected_verdict": "vulnerable",
+    "vulnerable_function": "allocChoppedUpStripArrays",
+    "vulnerable_address": "source:libtiff/tif_dirread.c:5773:allocChoppedUpStripArrays"
+  }
+}

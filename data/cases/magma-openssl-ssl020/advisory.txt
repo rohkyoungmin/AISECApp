@@ -1,0 +1,1 @@
+Magma openssl bug SSL020 is modeled by a patch touching ssl/t1_lib.c. The Magma canary marks the vulnerable condition `eticklen <= TLSEXT_KEYNAME_LENGTH + EVP_CIPHER_CTX_get_iv_length(ctx) + mlen`.

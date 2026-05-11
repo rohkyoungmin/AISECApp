@@ -1,0 +1,56 @@
+xmlMallocLoc @ source:xmlmemory.c:172:xmlMallocLoc
+Magma-derived source-level excerpt for the vulnerable build.
+MAGMA_ENABLE_FIXES is treated as disabled for this placeholder excerpt.
+MAGMA_BUG condition: size > (MAX_SIZE_T - RESERVE_SIZE)
+
+--- a/xmlmemory.c
++++ b/xmlmemory.c
+@@ -172,12 +172,17 @@ xmlMallocLoc(size_t size, const char * file, int line)
+ 
+     TEST_POINT
+ 
++#ifdef MAGMA_ENABLE_FIXES
+     if (size > (MAX_SIZE_T - RESERVE_SIZE)) {
+ 	xmlGenericError(xmlGenericErrorContext,
+ 		"xmlMallocLoc : Unsigned overflow\n");
+ 	xmlMemoryDump();
+ 	return(NULL);
+     }
++#endif
++#ifdef MAGMA_ENABLE_CANARIES
++    MAGMA_LOG("%MAGMA_BUG%", size > (MAX_SIZE_T - RESERVE_SIZE));
++#endif
+ 
+     p = (MEMHDR *) malloc(RESERVE_SIZE+size);
+ 
+@@ -248,12 +253,17 @@ xmlMallocAtomicLoc(size_t size, const char * file, int line)
+ 
+     TEST_POINT
+ 
++#ifdef MAGMA_ENABLE_FIXES
+     if (size > (MAX_SIZE_T - RESERVE_SIZE)) {
+ 	xmlGenericError(xmlGenericErrorContext,
+ 		"xmlMallocAtomicLoc : Unsigned overflow\n");
+ 	xmlMemoryDump();
+ 	return(NULL);
+     }
++#endif
++#ifdef MAGMA_ENABLE_CANARIES
++    MAGMA_LOG("%MAGMA_BUG%", size > (MAX_SIZE_T - RESERVE_SIZE));
++#endif
+ 
+     p = (MEMHDR *) malloc(RESERVE_SIZE+size);
+ 
+@@ -359,12 +369,17 @@ xmlReallocLoc(void *ptr,size_t size, const char * file, int line)
+ #endif
++#ifdef MAGMA_ENABLE_FIXES
++#endif
++#ifdef MAGMA_ENABLE_CANARIES
++    MAGMA_LOG("%MAGMA_BUG%", size > (MAX_SIZE_T - RESERVE_SIZE));
++#endif
+@@ -513,12 +528,17 @@ xmlMemStrdupLoc(const char *str, const char *file, int line)
++#ifdef MAGMA_ENABLE_FIXES
++#endif
++#ifdef MAGMA_ENABLE_CANARIES
++    MAGMA_LOG("%MAGMA_BUG%", size > (MAX_SIZE_T - RESERVE_SIZE));
++#endif

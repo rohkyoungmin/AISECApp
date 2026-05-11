@@ -1,0 +1,28 @@
+{
+  "case_id": "magma-lua-lua003",
+  "cve_id": "MAGMA-LUA003",
+  "project": "lua",
+  "language": "C",
+  "source": {
+    "benchmark": "Magma",
+    "target": "lua",
+    "bug_id": "LUA003",
+    "patch_path": "external/magma/targets/lua/patches/bugs/LUA003.patch"
+  },
+  "binary": {
+    "path": "vulnerable/binary",
+    "architecture": "x86_64",
+    "compiler": "magma-default",
+    "optimization": "unknown"
+  },
+  "inputs": {
+    "advisory": "advisory.txt",
+    "patch_diff": "patch.diff",
+    "decompiler_excerpt": "vulnerable/decompiler.txt"
+  },
+  "labels": {
+    "expected_verdict": "vulnerable",
+    "vulnerable_function": "io_popen",
+    "vulnerable_address": "source:liolib.c:291:io_popen"
+  }
+}

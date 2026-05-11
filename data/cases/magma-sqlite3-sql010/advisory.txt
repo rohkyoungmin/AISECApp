@@ -1,0 +1,1 @@
+Magma sqlite3 bug SQL010 is modeled by a patch touching src/whereexpr.c. The Magma canary marks the vulnerable condition `pTerm!=&pWC->a[idxTerm]`.

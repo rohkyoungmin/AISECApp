@@ -1,0 +1,1 @@
+Magma libpng bug PNG007 is modeled by a patch touching pngrtran.c, pngset.c. The Magma canary marks the vulnerable condition `png_ptr->palette == NULL`.

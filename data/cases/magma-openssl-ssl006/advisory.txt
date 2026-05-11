@@ -1,0 +1,1 @@
+Magma openssl bug SSL006 is modeled by a patch touching crypto/evp/encode.c. The Magma canary marks the vulnerable condition `INT_MAX - inl < ctx->num`.

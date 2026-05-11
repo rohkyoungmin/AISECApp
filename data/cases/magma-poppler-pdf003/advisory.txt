@@ -1,0 +1,1 @@
+Magma poppler bug PDF003 is modeled by a patch touching utils/HtmlOutputDev.cc, utils/ImageOutputDev.cc, poppler/GfxState.h. The Magma canary marks the vulnerable condition `MAGMA_AND(colorMap->getColorSpace2() == nullptr, (size_t)colorMap->getNumPixelComps() > sizeof(zero))`.

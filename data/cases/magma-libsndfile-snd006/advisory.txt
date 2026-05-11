@@ -1,0 +1,1 @@
+Magma libsndfile bug SND006 is modeled by a patch touching src/flac.c. The Magma canary marks the vulnerable condition `psf->sf.channels != (int) frame->header.channels`.

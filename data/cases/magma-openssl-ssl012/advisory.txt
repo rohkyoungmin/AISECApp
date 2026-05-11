@@ -1,0 +1,1 @@
+Magma openssl bug SSL012 is modeled by a patch touching crypto/x509/x509_req.c. The Magma canary marks the vulnerable condition `pktmp == NULL`.

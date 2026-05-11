@@ -1,0 +1,28 @@
+{
+  "case_id": "magma-sqlite3-sql011",
+  "cve_id": "MAGMA-SQL011",
+  "project": "sqlite3",
+  "language": "C",
+  "source": {
+    "benchmark": "Magma",
+    "target": "sqlite3",
+    "bug_id": "SQL011",
+    "patch_path": "external/magma/targets/sqlite3/patches/bugs/SQL011.patch"
+  },
+  "binary": {
+    "path": "vulnerable/binary",
+    "architecture": "x86_64",
+    "compiler": "magma-default",
+    "optimization": "unknown"
+  },
+  "inputs": {
+    "advisory": "advisory.txt",
+    "patch_diff": "patch.diff",
+    "decompiler_excerpt": "vulnerable/decompiler.txt"
+  },
+  "labels": {
+    "expected_verdict": "vulnerable",
+    "vulnerable_function": "getNodeSize",
+    "vulnerable_address": "source:ext/rtree/rtree.c:3651:getNodeSize"
+  }
+}

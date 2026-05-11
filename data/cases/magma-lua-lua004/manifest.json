@@ -1,0 +1,28 @@
+{
+  "case_id": "magma-lua-lua004",
+  "cve_id": "MAGMA-LUA004",
+  "project": "lua",
+  "language": "C",
+  "source": {
+    "benchmark": "Magma",
+    "target": "lua",
+    "bug_id": "LUA004",
+    "patch_path": "external/magma/targets/lua/patches/bugs/LUA004.patch"
+  },
+  "binary": {
+    "path": "vulnerable/binary",
+    "architecture": "x86_64",
+    "compiler": "magma-default",
+    "optimization": "unknown"
+  },
+  "inputs": {
+    "advisory": "advisory.txt",
+    "patch_diff": "patch.diff",
+    "decompiler_excerpt": "vulnerable/decompiler.txt"
+  },
+  "labels": {
+    "expected_verdict": "vulnerable",
+    "vulnerable_function": "lua_sethook",
+    "vulnerable_address": "source:ldebug.c:130:lua_sethook"
+  }
+}

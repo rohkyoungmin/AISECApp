@@ -1,0 +1,1 @@
+Magma sqlite3 bug SQL013 is modeled by a patch touching src/where.c. The Magma canary marks the vulnerable condition `pNew->nLSlot < (pNew->nLTerm+1)`.

@@ -1,0 +1,28 @@
+{
+  "case_id": "magma-sqlite3-sql002",
+  "cve_id": "MAGMA-SQL002",
+  "project": "sqlite3",
+  "language": "C",
+  "source": {
+    "benchmark": "Magma",
+    "target": "sqlite3",
+    "bug_id": "SQL002",
+    "patch_path": "external/magma/targets/sqlite3/patches/bugs/SQL002.patch"
+  },
+  "binary": {
+    "path": "vulnerable/binary",
+    "architecture": "x86_64",
+    "compiler": "magma-default",
+    "optimization": "unknown"
+  },
+  "inputs": {
+    "advisory": "advisory.txt",
+    "patch_diff": "patch.diff",
+    "decompiler_excerpt": "vulnerable/decompiler.txt"
+  },
+  "labels": {
+    "expected_verdict": "vulnerable",
+    "vulnerable_function": "selectExpander",
+    "vulnerable_address": "source:src/select.c:5008:selectExpander"
+  }
+}

@@ -1,0 +1,1 @@
+Magma sqlite3 bug SQL018 is modeled by a patch touching src/expr.c. The Magma canary marks the vulnerable condition `dequote==0`.

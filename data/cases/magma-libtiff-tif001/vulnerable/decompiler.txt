@@ -1,0 +1,85 @@
+horAcc8 @ source:libtiff/tif_predict.c:282:horAcc8
+Magma-derived source-level excerpt for the vulnerable build.
+MAGMA_ENABLE_FIXES is treated as disabled for this placeholder excerpt.
+MAGMA_BUG condition: (cc%stride)!=0
+
+diff --git a/libtiff/tif_predict.c b/libtiff/tif_predict.c
+index b775663..98d7c6b 100644
+--- a/libtiff/tif_predict.c
++++ b/libtiff/tif_predict.c
+@@ -282,12 +282,17 @@ horAcc8(TIFF* tif, uint8* cp0, tmsize_t cc)
+ 	tmsize_t stride = PredictorState(tif)->stride;
+ 
+ 	unsigned char* cp = (unsigned char*) cp0;
++#ifdef MAGMA_ENABLE_FIXES
+     if((cc%stride)!=0)
+     {
+         TIFFErrorExt(tif->tif_clientdata, "horAcc8",
+                      "%s", "(cc%stride)!=0");
+         return 0;
+     }
++#endif
++#ifdef MAGMA_ENABLE_CANARIES
++    MAGMA_LOG("%MAGMA_BUG%", (cc%stride)!=0);
++#endif
+ 
+ 	if (cc > stride) {
+ 		/*
+@@ -351,12 +356,17 @@ horAcc16(TIFF* tif, uint8* cp0, tmsize_t cc)
+ 	uint16* wp = (uint16*) cp0;
+ 	tmsize_t wc = cc / 2;
+ 
++#ifdef MAGMA_ENABLE_FIXES
+     if((cc%(2*stride))!=0)
+     {
+         TIFFErrorExt(tif->tif_clientdata, "horAcc16",
+                      "%s", "cc%(2*stride))!=0");
+         return 0;
+     }
++#endif
++#ifdef MAGMA_ENABLE_CANARIES
++    MAGMA_LOG("%MAGMA_BUG%", (cc%(2*stride))!=0);
++#endif
+ 
+ 	if (wc > stride) {
+ 		wc -= stride;
+@@ -386,12 +396,17 @@ horAcc32(TIFF* tif, uint8* cp0, tmsize_t cc)
++#ifdef MAGMA_ENABLE_FIXES
++#endif
++#ifdef MAGMA_ENABLE_CANARIES
++    MAGMA_LOG("%MAGMA_BUG%", (cc%(4*stride))!=0);
++#endif
+@@ -416,12 +431,17 @@ fpAcc(TIFF* tif, uint8* cp0, tmsize_t cc)
++#ifdef MAGMA_ENABLE_FIXES
++#endif
++#ifdef MAGMA_ENABLE_CANARIES
++    MAGMA_LOG("%MAGMA_BUG%", (cc%(bps*stride))!=0);
++#endif
+@@ -486,12 +506,19 @@ PredictorDecodeTile(TIFF* tif, uint8* op0, tmsize_t occ0, uint16 s)
++
++#ifdef MAGMA_ENABLE_FIXES
++#endif
++#ifdef MAGMA_ENABLE_CANARIES
++        MAGMA_LOG("%MAGMA_BUG%", (occ0%rowsize)!=0);
++#endif
++
+@@ -512,12 +539,17 @@ horDiff8(TIFF* tif, uint8* cp0, tmsize_t cc)
++#ifdef MAGMA_ENABLE_FIXES
++#endif
++#ifdef MAGMA_ENABLE_CANARIES
++    MAGMA_LOG("%MAGMA_BUG%", (cc%stride)!=0);
++#endif
+@@ -567,12 +599,17 @@ horDiff16(TIFF* tif, uint8* cp0, tmsize_t cc)
++#ifdef MAGMA_ENABLE_FIXES
++#endif
++#ifdef MAGMA_ENABLE_CANARIES
++    MAGMA_LOG("%MAGMA_BUG%", (cc%(2*stride))!=0);
++#endif
+@@ -607,12 +644,17 @@ horDiff32(TIFF* tif, uint8* cp0, tmsize_t cc)
++#ifdef MAGMA_ENABLE_FIXES
++#endif
++#ifdef MAGMA_ENABLE_CANARIES
++    MAGMA_LOG("%MAGMA_BUG%", (cc%(4*stride))!=0);
++#endif
+@@ -652,12 +694,17 @@ fpDiff(TIFF* tif, uint8* cp0, tmsize_t cc)
++#ifdef MAGMA_ENABLE_FIXES

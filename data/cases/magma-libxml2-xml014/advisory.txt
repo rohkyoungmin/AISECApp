@@ -1,0 +1,1 @@
+Magma libxml2 bug XML014 is modeled by a patch touching HTMLparser.c. The Magma canary marks the vulnerable condition `in >= ctxt->input->end`.

@@ -1,0 +1,28 @@
+{
+  "case_id": "magma-libxml2-xml008",
+  "cve_id": "MAGMA-XML008",
+  "project": "libxml2",
+  "language": "C",
+  "source": {
+    "benchmark": "Magma",
+    "target": "libxml2",
+    "bug_id": "XML008",
+    "patch_path": "external/magma/targets/libxml2/patches/bugs/XML008.patch"
+  },
+  "binary": {
+    "path": "vulnerable/binary",
+    "architecture": "x86_64",
+    "compiler": "magma-default",
+    "optimization": "unknown"
+  },
+  "inputs": {
+    "advisory": "advisory.txt",
+    "patch_diff": "patch.diff",
+    "decompiler_excerpt": "vulnerable/decompiler.txt"
+  },
+  "labels": {
+    "expected_verdict": "vulnerable",
+    "vulnerable_function": "magma_canary_context",
+    "vulnerable_address": "source:parser.c:4978:magma_canary_context"
+  }
+}

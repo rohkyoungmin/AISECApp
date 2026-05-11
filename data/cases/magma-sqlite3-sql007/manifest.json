@@ -1,0 +1,28 @@
+{
+  "case_id": "magma-sqlite3-sql007",
+  "cve_id": "MAGMA-SQL007",
+  "project": "sqlite3",
+  "language": "C",
+  "source": {
+    "benchmark": "Magma",
+    "target": "sqlite3",
+    "bug_id": "SQL007",
+    "patch_path": "external/magma/targets/sqlite3/patches/bugs/SQL007.patch"
+  },
+  "binary": {
+    "path": "vulnerable/binary",
+    "architecture": "x86_64",
+    "compiler": "magma-default",
+    "optimization": "unknown"
+  },
+  "inputs": {
+    "advisory": "advisory.txt",
+    "patch_diff": "patch.diff",
+    "decompiler_excerpt": "vulnerable/decompiler.txt"
+  },
+  "labels": {
+    "expected_verdict": "vulnerable",
+    "vulnerable_function": "sqlite3EndTable",
+    "vulnerable_address": "source:src/build.c:2236:sqlite3EndTable"
+  }
+}

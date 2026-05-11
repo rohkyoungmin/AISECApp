@@ -1,0 +1,28 @@
+{
+  "case_id": "magma-lua-lua001",
+  "cve_id": "MAGMA-LUA001",
+  "project": "lua",
+  "language": "C",
+  "source": {
+    "benchmark": "Magma",
+    "target": "lua",
+    "bug_id": "LUA001",
+    "patch_path": "external/magma/targets/lua/patches/bugs/LUA001.patch"
+  },
+  "binary": {
+    "path": "vulnerable/binary",
+    "architecture": "x86_64",
+    "compiler": "magma-default",
+    "optimization": "unknown"
+  },
+  "inputs": {
+    "advisory": "advisory.txt",
+    "patch_diff": "patch.diff",
+    "decompiler_excerpt": "vulnerable/decompiler.txt"
+  },
+  "labels": {
+    "expected_verdict": "vulnerable",
+    "vulnerable_function": "magma_canary_context",
+    "vulnerable_address": "source:ldebug.c:181:magma_canary_context"
+  }
+}

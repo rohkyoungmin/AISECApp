@@ -1,0 +1,1 @@
+Magma libxml2 bug XML013 is modeled by a patch touching HTMLparser.c. The Magma canary marks the vulnerable condition `q != (BASE_PTR+startPosition)`.

@@ -1,0 +1,28 @@
+{
+  "case_id": "magma-libpng-png005",
+  "cve_id": "MAGMA-PNG005",
+  "project": "libpng",
+  "language": "C",
+  "source": {
+    "benchmark": "Magma",
+    "target": "libpng",
+    "bug_id": "PNG005",
+    "patch_path": "external/magma/targets/libpng/patches/bugs/PNG005.patch"
+  },
+  "binary": {
+    "path": "vulnerable/binary",
+    "architecture": "x86_64",
+    "compiler": "magma-default",
+    "optimization": "unknown"
+  },
+  "inputs": {
+    "advisory": "advisory.txt",
+    "patch_diff": "patch.diff",
+    "decompiler_excerpt": "vulnerable/decompiler.txt"
+  },
+  "labels": {
+    "expected_verdict": "vulnerable",
+    "vulnerable_function": "png_check_IHDR",
+    "vulnerable_address": "source:png.c:2582:png_check_IHDR"
+  }
+}

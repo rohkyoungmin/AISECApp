@@ -1,0 +1,28 @@
+{
+  "case_id": "magma-openssl-ssl018",
+  "cve_id": "MAGMA-SSL018",
+  "project": "openssl",
+  "language": "C",
+  "source": {
+    "benchmark": "Magma",
+    "target": "openssl",
+    "bug_id": "SSL018",
+    "patch_path": "external/magma/targets/openssl/patches/bugs/SSL018.patch"
+  },
+  "binary": {
+    "path": "vulnerable/binary",
+    "architecture": "x86_64",
+    "compiler": "magma-default",
+    "optimization": "unknown"
+  },
+  "inputs": {
+    "advisory": "advisory.txt",
+    "patch_diff": "patch.diff",
+    "decompiler_excerpt": "vulnerable/decompiler.txt"
+  },
+  "labels": {
+    "expected_verdict": "vulnerable",
+    "vulnerable_function": "dtls1_preprocess_fragment",
+    "vulnerable_address": "source:ssl/statem/statem_dtls.c:423:dtls1_preprocess_fragment"
+  }
+}

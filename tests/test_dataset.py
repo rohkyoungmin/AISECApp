@@ -32,20 +32,20 @@ class DatasetTests(unittest.TestCase):
 
     def test_load_cases_from_root(self) -> None:
         cases = load_cases(CASES_ROOT)
+        case_ids = [case.case_id for case in cases]
 
-        self.assertEqual(
-            [case.case_id for case in cases],
-            ["demo-parse-header", "magma-libpng-png003"],
-        )
+        self.assertGreaterEqual(len(cases), 2)
+        self.assertIn("demo-parse-header", case_ids)
+        self.assertIn("magma-libpng-png003", case_ids)
 
     def test_load_case_records_from_root(self) -> None:
         records = load_case_records(CASES_ROOT)
+        case_ids = [record.case.case_id for record in records]
 
-        self.assertEqual(
-            [record.case.case_id for record in records],
-            ["demo-parse-header", "magma-libpng-png003"],
-        )
-        self.assertEqual([record.labels.expected_verdict for record in records], [Verdict.VULNERABLE, Verdict.VULNERABLE])
+        self.assertGreaterEqual(len(records), 2)
+        self.assertIn("demo-parse-header", case_ids)
+        self.assertIn("magma-libpng-png003", case_ids)
+        self.assertTrue(all(record.labels.expected_verdict == Verdict.VULNERABLE for record in records))
 
     def test_manifest_case_runs_through_pipeline(self) -> None:
         case = load_case(DEMO_CASE_DIR)

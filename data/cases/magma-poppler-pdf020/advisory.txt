@@ -1,0 +1,1 @@
+Magma poppler bug PDF020 is modeled by a patch touching fofi/FoFiType1C.cc. The Magma canary marks the vulnerable condition `val.pos == offset`.

@@ -1,0 +1,1 @@
+Magma php bug PHP011 is modeled by a patch touching ext/exif/exif.c. The Magma canary marks the vulnerable condition `ptr_offset_overflows(info->offset_base, offset)`.
