@@ -1,70 +1,31 @@
-# AISEC App
+# Reporter
 
-`AISEC App`은 1-day binary vulnerability를 자동 탐지하고, 그 결과를 검증 가능한 근거와 함께 리포트로 제공하는 것을 목표로 하는 프로젝트입니다.
+C/C++ 소스코드의 취약점을 자동으로 탐지하고 PDF 리포트로 출력하는 보안 분석 플랫폼입니다.
+Claude AI를 기반으로 한 4단계 멀티 에이전트 파이프라인이 ZIP 아카이브를 받아 취약점 후보를 추출하고, 증거 기반 검증을 거쳐 최종 리포트를 생성합니다.
 
-현재 저장소는 PPT 제안서를 코드로 옮기기 위한 첫 번째 뼈대입니다. 핵심 아이디어인 `Triage -> Patch Analysis -> Binary Match -> Verification -> Report` 흐름을 먼저 코드 구조로 고정해두고, 이후 데이터셋 수집과 실제 LLM/분석기 연동을 단계적으로 붙일 수 있게 구성했습니다.
+## 빠른 시작
 
-## 현재 들어있는 것
+### 사전 준비
 
-- 프로젝트 목표와 MVP 범위를 정리한 문서
-- 분석 파이프라인의 도메인 모델
-- 샘플 케이스를 기반으로 한 데모 실행 코드
-- 검증 레이어가 포함된 리포트 생성 흐름
-- 최소 단위 테스트
+- Python 3.10+
+- Node.js 18+
+- Anthropic API Key
 
-## 추천 시작 순서
-
-1. `docs/project-plan.md`를 읽고 범위와 평가 지표를 고정합니다.
-2. `src/aisec_app/models.py`와 `src/aisec_app/pipeline.py`를 기준으로 실제 입력/출력 포맷을 확정합니다.
-3. `data/`에 Magma 기반 CVE 샘플을 쌓고 baseline 단일 LLM 파이프라인을 먼저 만듭니다.
-4. 그 다음 verifier와 웹 리포트를 붙입니다.
-
-## 실행
-
-Python 3.10+ 기준입니다.
-
-```bash
-pip install -e .[llm]
-PYTHONPATH=src python3 -m aisec_app.cli
-PYTHONPATH=src python3 -m aisec_app.evaluation data/cases
-python3 -m unittest discover -s tests -v
-```
-
-## Claude Sonnet 설정
-
-실제 LLM 기반 source 분석은 Anthropic Claude API key가 필요합니다.
+### 환경 설정
 
 ```bash
 cp .env.example .env
+# .env에 ANTHROPIC_API_KEY 입력
 ```
 
-`.env`에 값을 채웁니다.
-
-```env
-ANTHROPIC_API_KEY=sk-ant-...
-ANTHROPIC_MODEL=claude-sonnet-4-6
-```
-
-소스 파일 분석:
+### 백엔드 실행
 
 ```bash
-PYTHONPATH=src python3 -m aisec_app.source_cli path/to/source.c
+pip install -e ".[api,llm]"
+uvicorn aisec_app.api:app --app-dir src --host 0.0.0.0 --port 8000 --reload
 ```
 
-ZIP 프로젝트 분석:
-
-```bash
-PYTHONPATH=src python3 -m aisec_app.zip_cli input/project.zip
-```
-
-백엔드 API 실행:
-
-```bash
-pip install -e .[api,llm]
-uvicorn aisec_app.api:app --app-dir src --reload
-```
-
-프론트 개발 서버 실행:
+### 프론트엔드 실행
 
 ```bash
 cd frontend
@@ -72,105 +33,26 @@ npm install
 npm run dev
 ```
 
-프론트 빌드 후 FastAPI에서 함께 serving:
+브라우저에서 [http://localhost:5173](http://localhost:5173) 접속
 
-```bash
-cd frontend
-npm run build
-cd ..
-uvicorn aisec_app.api:app --app-dir src --reload
+---
+
+API Key 없이 동작 확인만 하려면 `.env`에서 `ALLOW_HEURISTIC=true` 설정 후 분석 시 **Allow heuristic** 옵션을 켜세요.
+
+## 주요 기능
+
+- ZIP 아카이브 업로드 → 자동 C/C++ 파일 추출 및 분석
+- 4단계 AI 파이프라인: Extract → Triage → Finding → Verify → Report
+- Severity별(Critical / High / Medium / Low) 취약점 분류
+- 증거 코드 스니펫 포함 PDF 리포트 자동 생성
+- 프로젝트별 분석 히스토리 관리
+
+## 구조
+
+```
+src/aisec_app/    백엔드 (FastAPI + 분석 파이프라인)
+frontend/         프론트엔드 (React + Vite)
+docs/             설계 문서 및 작업 기록
 ```
 
-터미널에서 ZIP 업로드:
-
-```bash
-curl -X POST \
-  -F "file=@path/to/project.zip" \
-  -F "max_files=20" \
-  http://127.0.0.1:8000/analyze/zip
-```
-
-API key 없이 리포트 형식만 확인하려면 local heuristic mode를 사용할 수 있습니다.
-
-```bash
-PYTHONPATH=src python3 -m aisec_app.source_cli path/to/source.c --allow-heuristic
-PYTHONPATH=src python3 -m aisec_app.zip_cli input/project.zip --allow-heuristic
-```
-
-API에서도 heuristic fallback을 명시적으로 허용할 수 있습니다.
-
-```bash
-curl -X POST \
-  -F "file=@path/to/project.zip" \
-  -F "allow_heuristic=true" \
-  http://127.0.0.1:8000/analyze/zip
-```
-
-LLM finding은 `evidence_quote`가 실제 입력 source에 존재할 때만 accepted finding으로 남고, 근거가 입력에 없으면 rejected finding으로 분리됩니다.
-
-## 실험 명령
-
-Claude key 설정 후 실제 ZIP 분석:
-
-```bash
-PYTHONPATH=src python3 -m aisec_app.zip_cli input/project.zip --max-files 20 --output-dir output
-```
-
-`input/`에 ZIP 파일이 하나만 있으면 파일명을 생략해도 됩니다.
-
-```bash
-PYTHONPATH=src python3 -m aisec_app.zip_cli --max-files 20 --output-dir output
-```
-
-결과는 아래 구조로 저장됩니다.
-
-```text
-output/
-  project-<hash>/
-    report.json
-    report.md
-    report.pdf
-    llm_logs/
-      <source-file>.md
-```
-
-`report.pdf`는 발표/확인용 요약 리포트이고, `report.md`와 `report.json`은 상세 결과 확인용입니다. `llm_logs/`에는 파일별 agent decision log가 Markdown으로 저장됩니다.
-
-## Multi-Agent 분석 구조
-
-Source/ZIP 분석은 아래 agent 흐름을 따릅니다.
-
-```text
-Triage Agent -> Finding Agent -> Skeptic Verifier Agent -> Reporter Agent
-```
-
-- `Triage Agent`: 분석할 함수와 위험 신호를 고릅니다.
-- `Finding Agent`: 취약점 후보와 source evidence quote를 생성합니다.
-- `Skeptic Verifier Agent`: 근거가 입력 source에 실제로 있는지, claim을 지지하는지, 라인 범위와 confidence가 타당한지 검증합니다.
-- `Reporter Agent`: accepted finding과 rejected finding을 분리해 최종 report를 만듭니다.
-
-Reject 기준:
-
-- evidence quote가 없음
-- evidence quote가 제출된 source에 없음
-- finding verdict가 `vulnerable`이 아님
-- confidence가 threshold보다 낮음
-- root cause 또는 remediation이 없음
-- line reference가 source 범위를 벗어남
-- Claude verifier가 quote와 claim이 직접 연결되지 않는다고 판단함
-
-## 저장소 구조
-
-```text
-data/                CVE 케이스셋 적재 위치와 구조 안내
-docs/                프로젝트 범위, 설계, 초기 로드맵
-src/aisec_app/       도메인 모델과 파이프라인 스켈레톤
-tests/               최소 회귀 테스트
-```
-
-## 다음 단계
-
-- Magma에서 CVE 15~20개 후보를 정리해 `vulnerable/fixed binary pair`를 수집
-- 단일 LLM baseline과 multi-agent pipeline의 공통 입력 스키마 정의
-- 함수 위치 추정과 verifier reject rate를 측정할 로그 포맷 확정
-- 데모용 웹 UI는 분석 엔진이 안정화된 뒤 2차로 연결
+상세 아키텍처 및 구현 내용은 [docs/implementation.md](docs/implementation.md)를 참고하세요.
