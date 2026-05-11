@@ -390,3 +390,53 @@ Verifier Status:
 - `vulnerable/binary`와 `fixed/binary`는 placeholder이다.
 - 실제 Magma build artifact와 decompiler/static-analysis output은 다음 단계에서 교체해야 한다.
 - Claude Sonnet API를 붙이기 전까지는 semantic reasoning 성능이 제한적이다.
+
+## 2026-05-11 KST - Claude Sonnet source report 구조 추가
+
+### 구현 결과
+
+- `.env.example` 추가
+  - `ANTHROPIC_API_KEY`
+  - `ANTHROPIC_MODEL`
+  - `ANTHROPIC_MAX_TOKENS`
+  - `ANTHROPIC_TEMPERATURE`
+  - `AISEC_REQUIRE_LLM`
+- `.env`를 `.gitignore`에 추가했다.
+- `pyproject.toml`의 `llm` extra를 Claude용으로 변경했다.
+  - `anthropic`
+  - `python-dotenv`
+- `src/aisec_app/config.py` 추가
+  - `.env` 로드
+  - Claude 설정 로드
+- `src/aisec_app/source_analysis.py` 추가
+  - `ClaudeSourceAnalyzer`
+  - `HeuristicSourceAnalyzer`
+  - source analysis report 모델 검증
+  - evidence quote가 실제 source에 없으면 finding을 reject
+- `src/aisec_app/source_cli.py` 추가
+  - `PYTHONPATH=src python3 -m aisec_app.source_cli path/to/source.c`
+  - API key 없이 형식 확인 시 `--allow-heuristic`
+- `src/aisec_app/models.py`에 source report 모델 추가
+  - `SourceArtifact`
+  - `SourceFinding`
+  - `SourceAnalysisReport`
+- `tests/test_source_analysis.py` 추가
+- `README.md`에 Claude 설정과 source 분석 실행법 추가
+
+### Reject 정책
+
+Sonnet의 hallucination 여부와 별개로, finding의 `evidence_quote`가 실제 업로드 source 안에 존재하지 않으면 reject한다. 즉 reject는 모델의 자기 확신이 아니라 입력 근거 검증으로 결정한다.
+
+### 검증 결과
+
+```text
+PYTHONPATH=src python3 -m unittest discover -s tests -v
+14 tests passed
+```
+
+local heuristic smoke test:
+
+```text
+PYTHONPATH=src python3 -m aisec_app.source_cli /tmp/sample.c --allow-heuristic
+verifier_status: pass
+```

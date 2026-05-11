@@ -25,8 +25,38 @@ Python 3.11+ 기준입니다.
 
 ```bash
 PYTHONPATH=src python3 -m aisec_app.cli
+PYTHONPATH=src python3 -m aisec_app.evaluation data/cases
 python3 -m unittest discover -s tests -v
 ```
+
+## Claude Sonnet 설정
+
+실제 LLM 기반 source 분석은 Anthropic Claude API key가 필요합니다.
+
+```bash
+cp .env.example .env
+```
+
+`.env`에 값을 채웁니다.
+
+```env
+ANTHROPIC_API_KEY=sk-ant-...
+ANTHROPIC_MODEL=claude-3-5-sonnet-latest
+```
+
+소스 파일 분석:
+
+```bash
+PYTHONPATH=src python3 -m aisec_app.source_cli path/to/source.c
+```
+
+API key 없이 리포트 형식만 확인하려면 local heuristic mode를 사용할 수 있습니다.
+
+```bash
+PYTHONPATH=src python3 -m aisec_app.source_cli path/to/source.c --allow-heuristic
+```
+
+LLM finding은 `evidence_quote`가 실제 입력 source에 존재할 때만 accepted finding으로 남고, 근거가 입력에 없으면 rejected finding으로 분리됩니다.
 
 ## 저장소 구조
 

@@ -102,3 +102,39 @@ class AnalysisReport:
 
     def to_dict(self) -> dict[str, object]:
         return asdict(self)
+
+
+@dataclass(slots=True)
+class SourceArtifact:
+    filename: str
+    content: str
+
+
+@dataclass(slots=True)
+class SourceFinding:
+    title: str
+    verdict: Verdict
+    severity: str
+    function_name: str
+    line_start: int | None
+    line_end: int | None
+    confidence: float
+    root_cause: str
+    evidence_quote: str
+    remediation: str
+
+
+@dataclass(slots=True)
+class SourceAnalysisReport:
+    report_id: str
+    filename: str
+    verdict: Verdict
+    verifier_status: VerificationStatus
+    verifier_rationale: str
+    model: str
+    summary: str
+    findings: list[SourceFinding] = field(default_factory=list)
+    rejected_findings: list[SourceFinding] = field(default_factory=list)
+
+    def to_dict(self) -> dict[str, object]:
+        return asdict(self)
