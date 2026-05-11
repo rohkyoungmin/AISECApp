@@ -6,16 +6,18 @@ import Header from "../components/Header";
 import { StatusBadge } from "../components/StatusBadge";
 
 function formatDate(iso: string) {
-  return new Date(iso).toLocaleString(undefined, {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
+  return new Date(iso).toLocaleDateString(undefined, {
+    month: "short", day: "numeric", year: "numeric",
   });
 }
 
-function CreateModal({ onClose, onCreate }: { onClose: () => void; onCreate: (p: Project) => void }) {
+function CreateModal({
+  onClose,
+  onCreate,
+}: {
+  onClose: () => void;
+  onCreate: (p: Project) => void;
+}) {
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -34,7 +36,7 @@ function CreateModal({ onClose, onCreate }: { onClose: () => void; onCreate: (p:
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
-        <h2>New Project</h2>
+        <p className="modal-title">New Project</p>
         <input
           className="input"
           placeholder="Project name"
@@ -45,8 +47,12 @@ function CreateModal({ onClose, onCreate }: { onClose: () => void; onCreate: (p:
         />
         <div className="modal-actions">
           <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
-          <button className="btn btn-primary" onClick={submit} disabled={loading || !name.trim()}>
-            {loading ? "Creating..." : "Create"}
+          <button
+            className="btn btn-primary"
+            onClick={submit}
+            disabled={loading || !name.trim()}
+          >
+            {loading ? "Creating..." : "Create Project"}
           </button>
         </div>
       </div>
@@ -61,38 +67,61 @@ export default function ProjectsPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    api.listProjects()
-      .then(setProjects)
-      .finally(() => setLoading(false));
+    api.listProjects().then(setProjects).finally(() => setLoading(false));
   }, []);
 
   return (
-    <div className="page">
+    <div className="page-layout">
       <Header />
       <div className="page-content">
-        <div className="page-title-row">
-          <h1>Projects</h1>
-          <span className="spacer" />
+        {/* Page header */}
+        <div style={{
+          display: "flex",
+          alignItems: "flex-end",
+          justifyContent: "space-between",
+          marginBottom: 40,
+        }}>
+          <div>
+            <h1 style={{
+              fontFamily: "var(--font-display)",
+              fontSize: 36,
+              fontWeight: 400,
+              letterSpacing: "-0.02em",
+              color: "var(--ink)",
+              marginBottom: 4,
+            }}>
+              Projects
+            </h1>
+            {!loading && (
+              <p style={{ color: "var(--muted)", fontSize: 14 }}>
+                {projects.length} {projects.length === 1 ? "project" : "projects"}
+              </p>
+            )}
+          </div>
           <button className="btn btn-primary" onClick={() => setShowCreate(true)}>
             + New Project
           </button>
         </div>
 
         {loading && (
-          <p style={{ color: "var(--text-dim)", fontFamily: "var(--mono)", fontSize: 12 }}>
-            Loading...
-          </p>
+          <p style={{ color: "var(--muted)", fontSize: 14 }}>Loading...</p>
         )}
 
         {!loading && projects.length === 0 && (
-          <div className="empty-state">
-            <div className="empty-state-icon">⬡</div>
-            <h3 style={{ color: "var(--text-dim)", fontFamily: "var(--head)", fontSize: 14 }}>
+          <div style={{
+            textAlign: "center",
+            padding: "80px 32px",
+            background: "var(--surface-card)",
+            borderRadius: "var(--r-xl)",
+          }}>
+            <p style={{ color: "var(--ink)", fontWeight: 500, fontSize: 16, marginBottom: 8 }}>
               No projects yet
-            </h3>
-            <p>Create a project and upload a ZIP archive to start analysis.</p>
-            <button className="btn btn-outline" style={{ marginTop: 20 }} onClick={() => setShowCreate(true)}>
-              + New Project
+            </p>
+            <p style={{ color: "var(--muted)", fontSize: 14, marginBottom: 28 }}>
+              Create a project to start analyzing C/C++ source code.
+            </p>
+            <button className="btn btn-primary" onClick={() => setShowCreate(true)}>
+              Create your first project
             </button>
           </div>
         )}
@@ -101,20 +130,28 @@ export default function ProjectsPage() {
           {projects.map((project) => (
             <div
               key={project.project_id}
-              className="glow-card project-card"
+              className="card-canvas card-clickable"
               onClick={() => navigate(`/projects/${project.project_id}`)}
+              style={{ padding: "24px" }}
             >
-              <div className="project-card-name">{project.name}</div>
-              <div className="project-card-meta">
-                <span>{formatDate(project.created_at)}</span>
-                <span>{project.reports.length} report{project.reports.length !== 1 ? "s" : ""}</span>
-              </div>
-              <div className="project-card-reports">
+              <h3 style={{
+                fontSize: 15,
+                fontWeight: 500,
+                color: "var(--ink)",
+                marginBottom: 6,
+              }}>
+                {project.name}
+              </h3>
+              <p style={{ color: "var(--muted)", fontSize: 13, marginBottom: 18 }}>
+                {formatDate(project.created_at)} · {project.reports.length}{" "}
+                {project.reports.length === 1 ? "report" : "reports"}
+              </p>
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                 {project.reports.slice(0, 3).map((r) => (
                   <StatusBadge key={r.report_id} status={r.verifier_status} />
                 ))}
                 {project.reports.length > 3 && (
-                  <span style={{ fontSize: 10, color: "var(--text-dim)", alignSelf: "center" }}>
+                  <span style={{ fontSize: 12, color: "var(--muted-soft)", alignSelf: "center" }}>
                     +{project.reports.length - 3} more
                   </span>
                 )}

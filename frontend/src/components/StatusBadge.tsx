@@ -4,9 +4,9 @@ interface Props {
 }
 
 const STATUS_MAP: Record<string, { cls: string; label: string }> = {
-  pass:         { cls: "badge-pass",   label: "PASS" },
-  reject:       { cls: "badge-reject", label: "REJECT" },
-  needs_review: { cls: "badge-review", label: "REVIEW" },
+  pass:         { cls: "badge-pass",   label: "Pass"    },
+  reject:       { cls: "badge-reject", label: "Findings" },
+  needs_review: { cls: "badge-review", label: "Review"  },
 };
 
 const SEV_MAP: Record<string, string> = {
@@ -17,11 +17,14 @@ const SEV_MAP: Record<string, string> = {
 };
 
 export function StatusBadge({ status, className = "" }: Props) {
-  const info = STATUS_MAP[status] ?? { cls: "badge-review", label: status.toUpperCase() };
+  const info = STATUS_MAP[status] ?? { cls: "badge-review", label: status };
   return <span className={`badge ${info.cls} ${className}`}>{info.label}</span>;
 }
 
 export function SeverityBadge({ status, className = "" }: Props) {
-  const cls = SEV_MAP[status.toLowerCase()] ?? "badge-review";
-  return <span className={`badge ${cls} ${className}`}>{status.toUpperCase()}</span>;
+  const cls = SEV_MAP[status?.toLowerCase()] ?? "badge-review";
+  const label = status
+    ? status.charAt(0).toUpperCase() + status.slice(1).toLowerCase()
+    : status;
+  return <span className={`badge ${cls} ${className}`}>{label}</span>;
 }

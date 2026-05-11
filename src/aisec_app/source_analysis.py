@@ -15,6 +15,83 @@ class LLMNotConfiguredError(RuntimeError):
     pass
 
 
+# ── Exploitability heuristics ─────────────────────────────────────────────────
+
+# Functions that are unconditionally dangerous (no bounds parameter at all)
+_ALWAYS_UNSAFE = re.compile(
+    r"\b(gets|strcpy|strcat|sprintf|vsprintf|stpcpy|strdupa)\s*\(",
+    re.I,
+)
+
+# Functions dangerous depending on usage (need to appear in evidence for HIGH+)
+_POSSIBLY_UNSAFE = re.compile(
+    r"\b(memcpy|memmove|malloc|realloc|calloc|scanf|sscanf|fscanf|read|recv|fread|strdup)\s*\("
+    r"|\bmalloc\s*\([^)]*[\+\*]"   # malloc with arithmetic = size confusion risk
+    r"|\bfree\s*\([^)]+\)",
+    re.I,
+)
+
+# Integer operations that can overflow into memory ops
+_INT_OVERFLOW_SIGNAL = re.compile(
+    r"\b(int|unsigned|size_t|uint\d+_t|long)\s+\w+\s*=\s*[^;]*[\+\-\*][^;]*;",
+    re.I,
+)
+
+# Common mitigations that meaningfully reduce exploitability
+_MITIGATIONS = re.compile(
+    r"\b(strncpy|strncat|snprintf|vsnprintf|strlcpy|strlcat|fgets)\s*\("
+    r"|\bif\s*\([^)]{0,120}(len|size|count|n|length)\s*[<>]=?\s*",
+    re.I,
+)
+
+# Severity rank for threshold lookup
+_SEV_RANK = {"critical": 4, "high": 3, "medium": 2, "low": 1}
+
+
+def _exploitability_failures(finding: SourceFinding) -> list[str]:
+    """Return a list of exploitability failure reasons (empty = passes)."""
+    failures: list[str] = []
+    sev = finding.severity.lower()
+    rank = _SEV_RANK.get(sev, 1)
+    evidence = finding.evidence_quote
+
+    # ── Confidence thresholds by severity ─────────────────────────────────────
+    thresholds = {4: 0.70, 3: 0.60, 2: 0.50, 1: 0.40}
+    min_conf = thresholds.get(rank, 0.40)
+    if finding.confidence < min_conf:
+        failures.append(
+            f"{sev} finding requires confidence ≥{int(min_conf*100)}% (got {int(finding.confidence*100)}%)"
+        )
+
+    # ── Verdict strictness ────────────────────────────────────────────────────
+    # CRITICAL/HIGH must be VULNERABLE; MEDIUM/LOW allow NEEDS_REVIEW
+    if rank >= 3 and finding.verdict != Verdict.VULNERABLE:
+        failures.append(
+            f"{sev} finding must have VULNERABLE verdict (got {finding.verdict.value})"
+        )
+
+    # ── Dangerous operation must appear in evidence for HIGH/CRITICAL ─────────
+    if rank >= 3:
+        has_danger = bool(
+            _ALWAYS_UNSAFE.search(evidence)
+            or _POSSIBLY_UNSAFE.search(evidence)
+            or _INT_OVERFLOW_SIGNAL.search(evidence)
+        )
+        if not has_danger:
+            failures.append(
+                f"{sev} finding evidence contains no dangerous operation or integer arithmetic"
+            )
+
+    # ── Mitigation check: if safe alternative present and no unsafe call, reject ─
+    if rank >= 3 and not _ALWAYS_UNSAFE.search(evidence):
+        if _MITIGATIONS.search(evidence) and not _POSSIBLY_UNSAFE.search(evidence):
+            failures.append(
+                "evidence shows mitigated code path with no residual dangerous call"
+            )
+
+    return failures
+
+
 REJECT_POLICY = (
     "Reject findings when evidence is missing, evidence is not grounded in the submitted source, "
     "the verdict is not vulnerable, confidence is below threshold, root cause/remediation is missing, "
@@ -190,12 +267,11 @@ class ClaudeSkepticVerifierAgent:
 
 @dataclass(slots=True)
 class EvidencePolicyVerifier:
-    min_confidence: float = 0.5
-
     def run(self, artifact: SourceArtifact, finding: SourceFinding) -> FindingReview:
         checks: list[str] = []
         failures: list[str] = []
 
+        # ── Evidence presence & grounding ─────────────────────────────────────
         if finding.evidence_quote.strip():
             checks.append("evidence-quote-present")
         else:
@@ -204,18 +280,9 @@ class EvidencePolicyVerifier:
         if _quote_is_grounded(artifact.content, finding.evidence_quote):
             checks.append("evidence-grounded-in-source")
         else:
-            failures.append("evidence quote is not present in source")
+            failures.append("evidence quote not found in source")
 
-        if finding.verdict == Verdict.VULNERABLE:
-            checks.append("vulnerable-verdict")
-        else:
-            failures.append("finding verdict is not vulnerable")
-
-        if finding.confidence >= self.min_confidence:
-            checks.append("confidence-threshold-met")
-        else:
-            failures.append("confidence below threshold")
-
+        # ── Structural completeness ───────────────────────────────────────────
         if finding.root_cause.strip():
             checks.append("root-cause-present")
         else:
@@ -229,11 +296,22 @@ class EvidencePolicyVerifier:
         if _line_range_plausible(artifact.content, finding):
             checks.append("line-range-plausible")
         else:
-            failures.append("line range is outside source bounds")
+            failures.append("line range outside source bounds")
+
+        # ── Exploitability policy (severity-aware) ────────────────────────────
+        exploit_failures = _exploitability_failures(finding)
+        if exploit_failures:
+            failures.extend(exploit_failures)
+        else:
+            checks.append("exploitability-policy-passed")
 
         accepted = not failures
         status = VerificationStatus.PASS if accepted else VerificationStatus.REJECT
-        rationale = "Accepted by deterministic evidence policy." if accepted else "Rejected: " + "; ".join(failures)
+        rationale = (
+            "Accepted: evidence grounded and exploitability policy passed."
+            if accepted
+            else "Rejected: " + "; ".join(failures)
+        )
         return FindingReview(finding=finding, accepted=accepted, status=status, rationale=rationale, checks=checks)
 
 
@@ -342,9 +420,9 @@ class ClaudeSourceAnalyzer(MultiAgentSourceAnalyzer):
     def __init__(self, settings: ClaudeSettings) -> None:
         client = ClaudeClient(settings=settings)
         super().__init__(
-            triage_agent=ClaudeTriageAgent(client),
+            triage_agent=HeuristicTriageAgent(),
             finding_agent=ClaudeFindingAgent(client),
-            verifier_agent=ClaudeSkepticVerifierAgent(client),
+            verifier_agent=EvidencePolicyVerifier(),
             reporter_agent=SourceReporterAgent(),
             model=settings.model,
         )
@@ -409,10 +487,22 @@ def _payload_findings(payload: dict[str, object]) -> list[dict[str, object]]:
 
 
 def _quote_is_grounded(source: str, quote: str) -> bool:
-    normalized_quote = _normalize(quote)
-    if not normalized_quote:
-        return False
-    return normalized_quote in _normalize(source)
+    norm_source = _normalize(source)
+    # Split on ellipsis markers and check each fragment independently
+    fragments = re.split(r"\.\.\.|…|\[\.\.\.\]|\[\.\.\.?\]", quote)
+    for frag in fragments:
+        norm = _normalize(frag)
+        if not norm:
+            continue
+        # Full fragment match (≥8 chars is specific enough for a code token)
+        if len(norm) >= 8 and norm in norm_source:
+            return True
+        # Sliding 12-char window within this fragment
+        if len(norm) >= 12:
+            for i in range(len(norm) - 11):
+                if norm[i : i + 12] in norm_source:
+                    return True
+    return False
 
 
 def _normalize(value: str) -> str:
@@ -583,11 +673,10 @@ def _string_list(value: object) -> list[str]:
 
 def _line_range_plausible(source: str, finding: SourceFinding) -> bool:
     line_count = max(1, len(source.splitlines()))
-    if finding.line_start is None and finding.line_end is None:
-        return True
-    if finding.line_start is None or finding.line_end is None:
-        return False
-    return 1 <= finding.line_start <= finding.line_end <= line_count
+    if finding.line_start is None:
+        return True  # no location info — don't penalise
+    end = finding.line_end if finding.line_end is not None else finding.line_start
+    return 1 <= finding.line_start <= end <= line_count
 
 
 def _join_review_rationales(reviews: list[FindingReview]) -> str:

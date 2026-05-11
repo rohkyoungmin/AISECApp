@@ -48,240 +48,310 @@ def write_report_pdf(path: Path, report: ProjectAnalysisReport) -> None:
         _write_fallback_pdf(path, render_project_markdown(report))
 
 
+_FONT_DIR = Path("/usr/share/fonts/truetype/dejavu")
+_FONTS_LOADED = False
+
+
+def _load_fonts(pdf) -> tuple[str, str, str]:
+    """Register DejaVu fonts (Sans/Serif/Mono). Returns (body, display, mono) family names."""
+    global _FONTS_LOADED
+    if not _FONTS_LOADED and _FONT_DIR.exists():
+        try:
+            pdf.add_font("DVSans",  "",  str(_FONT_DIR / "DejaVuSans.ttf"),       uni=True)
+            pdf.add_font("DVSans",  "B", str(_FONT_DIR / "DejaVuSans-Bold.ttf"),  uni=True)
+            pdf.add_font("DVSerif", "",  str(_FONT_DIR / "DejaVuSerif.ttf"),       uni=True)
+            pdf.add_font("DVSerif", "B", str(_FONT_DIR / "DejaVuSerif-Bold.ttf"), uni=True)
+            pdf.add_font("DVMono",  "",  str(_FONT_DIR / "DejaVuSansMono.ttf"),   uni=True)
+            _FONTS_LOADED = True
+            return "DVSans", "DVSerif", "DVMono"
+        except Exception:
+            pass
+    return "Helvetica", "Helvetica", "Courier"
+
+
 def _write_fpdf2_report(path: Path, report: ProjectAnalysisReport) -> None:
     from fpdf import FPDF  # type: ignore[import]
 
-    DARK_BG = (10, 12, 24)
-    HEADER_BG = (15, 18, 40)
-    ACCENT = (0, 180, 255)
-    ACCENT_DIM = (0, 100, 160)
-    WHITE = (220, 235, 255)
-    DIM = (100, 130, 160)
-    CRITICAL = (220, 30, 60)
-    HIGH = (255, 120, 0)
-    MEDIUM = (255, 200, 0)
-    LOW = (60, 180, 255)
-    SUCCESS = (0, 200, 100)
-    REJECT = (180, 40, 60)
+    # ── Design tokens (matches web UI) ───────────────────────────────────────
+    CANVAS   = (250, 249, 245)   # --canvas
+    CARD     = (239, 233, 222)   # --surface-card
+    DARK     = (24,  23,  21)    # --surface-dark
+    PRIMARY  = (1,   64,  41)    # --primary (dark green)
+    INK      = (20,  20,  19)    # --ink
+    MUTED    = (108, 106, 100)   # --muted
+    HAIRLINE = (230, 223, 216)   # --hairline
+    WHITE    = (255, 255, 255)
+    SUCCESS  = (26,  122, 69)    # --success
+    ERROR    = (198, 69,  69)    # --error
+    WARNING  = (212, 160, 23)    # --warning
+    AMBER    = (232, 165, 90)    # --amber
+    TEAL     = (93,  184, 166)   # --teal
+
+    SEV_COLORS = {"critical": ERROR, "high": AMBER, "medium": WARNING, "low": TEAL}
 
     accepted = sum(len(fr.findings) for fr in report.file_reports)
     rejected = sum(len(fr.rejected_findings) for fr in report.file_reports)
 
     pdf = FPDF()
-    pdf.set_auto_page_break(auto=True, margin=18)
+    pdf.set_auto_page_break(auto=True, margin=20)
+    BODY, DISPLAY, MONO = _load_fonts(pdf)
     pdf.add_page()
 
-    # ── Cover header bar ──────────────────────────────────────────────────────
-    pdf.set_fill_color(*HEADER_BG)
-    pdf.rect(0, 0, 210, 50, style="F")
+    # ── Cover: dark green header bar ─────────────────────────────────────────
+    pdf.set_fill_color(*PRIMARY)
+    pdf.rect(0, 0, 210, 54, style="F")
 
-    pdf.set_fill_color(*ACCENT)
-    pdf.rect(0, 0, 6, 50, style="F")
-
-    pdf.set_xy(12, 10)
-    pdf.set_font("Helvetica", "B", 26)
-    pdf.set_text_color(*ACCENT)
-    pdf.cell(0, 12, "AISEC", ln=False)
-    pdf.set_font("Helvetica", "", 14)
-    pdf.set_text_color(*DIM)
-    pdf.set_xy(12, 24)
-    pdf.cell(0, 8, "AI-Powered Source Security Analysis", ln=True)
-
-    # Status badge top-right
-    status_val = report.verifier_status.value.upper()
-    badge_color = SUCCESS if report.verifier_status.value == "pass" else REJECT
-    pdf.set_fill_color(*badge_color)
+    pdf.set_xy(14, 12)
+    pdf.set_font(DISPLAY, "B", 28)
     pdf.set_text_color(*WHITE)
-    pdf.set_font("Helvetica", "B", 10)
-    pdf.set_xy(148, 16)
-    pdf.cell(52, 10, f"  {status_val}  ", border=0, align="C", fill=True)
+    pdf.cell(0, 14, "Reporter")
 
-    # ── Project info block ─────────────────────────────────────────────────────
-    pdf.set_xy(12, 58)
-    pdf.set_fill_color(*DARK_BG)
-    pdf.set_text_color(*DIM)
-    pdf.set_font("Helvetica", "", 9)
+    pdf.set_xy(14, 30)
+    pdf.set_font(BODY, "", 11)
+    pdf.set_text_color(180, 220, 195)
+    pdf.cell(0, 7, "Security Analysis Report")
 
-    info_lines = [
-        ("Archive", report.archive_name),
-        ("Project ID", report.project_id),
-        ("Files analyzed", f"{report.analyzed_files} / {report.total_files}"),
+    # Status badge
+    status_val = report.verifier_status.value.upper()
+    badge_bg = SUCCESS if report.verifier_status.value == "pass" else ERROR
+    pdf.set_fill_color(*badge_bg)
+    pdf.set_text_color(*WHITE)
+    pdf.set_font(BODY, "B", 9)
+    pdf.set_xy(150, 20)
+    pdf.cell(46, 10, status_val, border=0, align="C", fill=True)
+
+    # ── Canvas background for rest of page ───────────────────────────────────
+    pdf.set_fill_color(*CANVAS)
+    pdf.rect(0, 54, 210, 243, style="F")
+
+    # ── Project info ──────────────────────────────────────────────────────────
+    pdf.set_xy(14, 64)
+    info_rows = [
+        ("Archive",           report.archive_name),
+        ("Project ID",        report.project_id),
+        ("Files analyzed",    f"{report.analyzed_files} / {report.total_files}"),
         ("Accepted findings", str(accepted)),
         ("Rejected findings", str(rejected)),
     ]
-    for label, value in info_lines:
-        pdf.set_text_color(*DIM)
-        pdf.set_font("Helvetica", "B", 9)
-        pdf.cell(42, 6, label.upper(), ln=False)
-        pdf.set_text_color(*WHITE)
-        pdf.set_font("Courier", "", 9)
-        pdf.cell(0, 6, _truncate(value, 80), ln=True)
+    for label, value in info_rows:
+        pdf.set_x(14)
+        pdf.set_font(BODY, "B", 8)
+        pdf.set_text_color(*MUTED)
+        pdf.cell(44, 5.5, label.upper())
+        pdf.set_font(BODY, "", 9)
+        pdf.set_text_color(*INK)
+        pdf.cell(0, 5.5, _truncate(value, 90), ln=True)
 
-    # ── Summary ────────────────────────────────────────────────────────────────
-    pdf.ln(4)
-    _section_header(pdf, "SUMMARY", ACCENT, HEADER_BG)
-    pdf.set_font("Helvetica", "", 10)
-    pdf.set_text_color(*WHITE)
-    pdf.multi_cell(0, 6, report.summary)
+    # Hairline divider
+    pdf.ln(3)
+    y_div = pdf.get_y()
+    pdf.set_draw_color(*HAIRLINE)
+    pdf.set_line_width(0.3)
+    pdf.line(14, y_div, 196, y_div)
+    pdf.ln(5)
 
-    # ── Stats bar ─────────────────────────────────────────────────────────────
-    pdf.ln(4)
+    # ── Summary ───────────────────────────────────────────────────────────────
+    _section_header(pdf, "SUMMARY", PRIMARY, INK, BODY)
+    pdf.set_font(BODY, "", 10)
+    pdf.set_text_color(*INK)
+    pdf.set_x(14)
+    pdf.multi_cell(182, 5.5, report.summary)
+
+    # ── Stats row ─────────────────────────────────────────────────────────────
+    pdf.ln(5)
     stats = [
-        ("FILES", str(report.analyzed_files), ACCENT),
-        ("ACCEPTED", str(accepted), SUCCESS),
-        ("REJECTED", str(rejected), REJECT if rejected else DIM),
-        ("SKIPPED", str(len(report.skipped_files)), DIM),
+        ("FILES",    str(report.analyzed_files), PRIMARY),
+        ("ACCEPTED", str(accepted),              SUCCESS),
+        ("REJECTED", str(rejected),              ERROR if rejected else MUTED),
+        ("SKIPPED",  str(len(report.skipped_files)), MUTED),
     ]
     box_w = 44
-    start_x = 12
-    y = pdf.get_y()
+    y_stat = pdf.get_y()
     for i, (label, val, color) in enumerate(stats):
-        x = start_x + i * (box_w + 2)
-        pdf.set_fill_color(*HEADER_BG)
-        pdf.rect(x, y, box_w, 18, style="F")
+        x = 14 + i * (box_w + 2)
+        pdf.set_fill_color(*CARD)
+        pdf.rect(x, y_stat, box_w, 20, style="F")
         pdf.set_fill_color(*color)
-        pdf.rect(x, y, box_w, 3, style="F")
-        pdf.set_xy(x, y + 4)
-        pdf.set_font("Helvetica", "B", 14)
+        pdf.rect(x, y_stat, box_w, 3, style="F")
+        pdf.set_xy(x, y_stat + 4)
+        pdf.set_font(DISPLAY, "B", 16)
         pdf.set_text_color(*color)
         pdf.cell(box_w, 8, val, align="C")
-        pdf.set_xy(x, y + 12)
-        pdf.set_font("Helvetica", "", 7)
-        pdf.set_text_color(*DIM)
+        pdf.set_xy(x, y_stat + 13)
+        pdf.set_font(BODY, "", 7)
+        pdf.set_text_color(*MUTED)
         pdf.cell(box_w, 4, label, align="C")
-    pdf.set_y(y + 24)
+    pdf.set_y(y_stat + 26)
 
-    # ── Per-file findings ──────────────────────────────────────────────────────
+    # ── Per-file findings ─────────────────────────────────────────────────────
     for file_report in report.file_reports:
         if not file_report.findings and not file_report.rejected_findings:
             continue
-        _file_section(pdf, file_report, ACCENT, HEADER_BG, DARK_BG, WHITE, DIM, CRITICAL, HIGH, MEDIUM, LOW, SUCCESS, REJECT)
+        _file_section(pdf, file_report, PRIMARY, CARD, CANVAS, INK, MUTED, HAIRLINE,
+                      SEV_COLORS, SUCCESS, ERROR, BODY, DISPLAY, MONO)
 
-    # ── Footer on all pages ────────────────────────────────────────────────────
+    # ── Footer on every page ──────────────────────────────────────────────────
     page_count = pdf.page
     for page_num in range(1, page_count + 1):
         pdf.page = page_num
-        pdf.set_y(-14)
-        pdf.set_font("Helvetica", "", 7)
-        pdf.set_text_color(*DIM)
-        pdf.cell(0, 6, f"AISEC Security Report  ·  {report.project_id}  ·  Page {page_num}/{page_count}", align="C")
+        pdf.set_y(-12)
+        pdf.set_font(BODY, "", 7)
+        pdf.set_text_color(*MUTED)
+        pdf.cell(0, 5, f"Reporter Security Report  ·  {report.project_id}  ·  Page {page_num}/{page_count}", align="C")
 
     pdf.output(str(path))
 
 
-def _section_header(pdf, title: str, accent, bg) -> None:
-    pdf.set_fill_color(*bg)
-    pdf.set_x(12)
+def _section_header(pdf, title: str, primary, ink, body="Helvetica") -> None:
+    """Green left-border section label."""
     y = pdf.get_y()
-    pdf.rect(12, y, 186, 9, style="F")
-    pdf.set_fill_color(*accent)
-    pdf.rect(12, y, 3, 9, style="F")
-    pdf.set_xy(18, y + 1)
-    pdf.set_font("Helvetica", "B", 9)
-    pdf.set_text_color(*accent)
-    pdf.cell(0, 7, title, ln=True)
+    pdf.set_fill_color(*primary)
+    pdf.rect(14, y, 3, 7, style="F")
+    pdf.set_xy(20, y)
+    pdf.set_font(body, "B", 8)
+    pdf.set_text_color(*primary)
+    pdf.cell(0, 7, title.upper(), ln=True)
     pdf.ln(2)
 
 
-def _file_section(pdf, report: SourceAnalysisReport, accent, header_bg, dark_bg, white, dim,
-                  critical, high, medium, low, success, reject) -> None:
+def _hairline(pdf, muted) -> None:
+    y = pdf.get_y()
+    pdf.set_draw_color(*muted)
+    pdf.set_line_width(0.2)
+    pdf.line(14, y, 196, y)
+    pdf.ln(4)
+
+
+def _file_section(pdf, report: SourceAnalysisReport, primary, card, canvas, ink, muted, hairline,
+                  sev_colors: dict, success, error,
+                  body="Helvetica", display="Helvetica", mono="Courier") -> None:
+    if pdf.get_y() > 240:
+        pdf.add_page()
+        pdf.set_fill_color(*canvas)
+        pdf.rect(0, 0, 210, 297, style="F")
+
+    pdf.ln(4)
+
+    # ── File header bar ───────────────────────────────────────────────────────
+    y = pdf.get_y()
+    pdf.set_fill_color(*card)
+    pdf.rect(14, y, 182, 10, style="F")
+    pdf.set_fill_color(*primary)
+    pdf.rect(14, y, 3, 10, style="F")
+    pdf.set_xy(20, y + 1.5)
+    pdf.set_font(body, "B", 9)
+    pdf.set_text_color(*ink)
+    pdf.cell(100, 7, _truncate(report.filename, 60))
+    status_color = success if report.findings else muted
+    pdf.set_font(body, "", 8)
+    pdf.set_text_color(*status_color)
+    pdf.cell(0, 7, f"{report.verifier_status.value.upper()}  ·  {len(report.findings)} accepted", align="R", ln=True)
+
+    pdf.ln(2)
+    pdf.set_x(14)
+    pdf.set_font(body, "I", 8) if body == "Helvetica" else pdf.set_font(body, "", 8)
+    pdf.set_text_color(*muted)
+    pdf.multi_cell(182, 4.5, report.summary)
     pdf.ln(3)
-    _section_header(pdf, f"FILE: {report.filename}", accent, header_bg)
-
-    # File meta row
-    pdf.set_font("Helvetica", "", 9)
-    pdf.set_x(12)
-    verdict_color = success if report.findings else dim
-    pdf.set_text_color(*verdict_color)
-    pdf.cell(60, 5, f"Status: {report.verifier_status.value.upper()}")
-    pdf.set_text_color(*dim)
-    pdf.cell(60, 5, f"Model: {report.model}")
-    pdf.cell(0, 5, f"Findings: {len(report.findings)} accepted", ln=True)
-
-    pdf.set_font("Helvetica", "I", 8)
-    pdf.set_text_color(*dim)
-    pdf.set_x(12)
-    pdf.multi_cell(0, 5, report.summary)
-    pdf.ln(2)
-
-    severity_colors = {"critical": critical, "high": high, "medium": medium, "low": low}
 
     for finding in report.findings:
-        _finding_block(pdf, finding, severity_colors, header_bg, white, dim, accepted=True)
+        _finding_block(pdf, finding, sev_colors, canvas, card, ink, muted, hairline,
+                       accepted=True, body=body, mono=mono)
 
     for finding in report.rejected_findings:
-        _finding_block(pdf, finding, severity_colors, header_bg, white, dim, accepted=False)
+        _finding_block(pdf, finding, sev_colors, canvas, card, ink, muted, hairline,
+                       accepted=False, body=body, mono=mono)
 
 
-def _finding_block(pdf, finding: SourceFinding, severity_colors: dict,
-                   bg, white, dim, accepted: bool) -> None:
-    REJECT_COLOR = (100, 50, 50)
-    block_bg = bg if accepted else REJECT_COLOR
-    sev = finding.severity.lower()
-    sev_color = severity_colors.get(sev, dim)
-
-    y = pdf.get_y()
-    if y > 260:
+def _finding_block(pdf, finding: SourceFinding, sev_colors: dict,
+                   canvas, card, ink, muted, hairline, accepted: bool,
+                   body="Helvetica", mono="Courier") -> None:
+    if pdf.get_y() > 250:
         pdf.add_page()
+        pdf.set_fill_color(*canvas)
+        pdf.rect(0, 0, 210, 297, style="F")
 
-    pdf.set_fill_color(*block_bg)
-    pdf.set_x(12)
-    # Draw block background
-    block_h = 44
-    pdf.rect(12, pdf.get_y(), 186, block_h, style="F")
+    sev = finding.severity.lower()
+    sev_color = sev_colors.get(sev, muted)
+    conf_pct = int(finding.confidence * 100)
 
-    # Severity stripe
-    pdf.set_fill_color(*sev_color)
-    pdf.rect(12, pdf.get_y(), 3, block_h, style="F")
+    REJECT_STRIPE = (198, 69, 69)
+    stripe_color = sev_color if accepted else REJECT_STRIPE
 
-    current_y = pdf.get_y() + 2
+    # Left severity stripe (placeholder height, updated at end)
+    y0 = pdf.get_y()
 
-    # Title line
-    pdf.set_xy(18, current_y)
-    pdf.set_font("Helvetica", "B", 10)
-    pdf.set_text_color(*white)
-    label = "✓" if accepted else "✗"
-    pdf.cell(170, 6, f"{label}  {_truncate(finding.title, 70)}", ln=True)
+    # ── Title row ─────────────────────────────────────────────────────────────
+    pdf.set_xy(20, y0)
+    pdf.set_font(body, "B", 10)
+    pdf.set_text_color(*ink)
+    marker = "[REJECTED]  " if not accepted else ""
+    pdf.multi_cell(172, 6, f"{marker}{finding.title}")
+    pdf.ln(1)
 
-    # Severity + function + lines
-    pdf.set_xy(18, pdf.get_y())
-    pdf.set_font("Helvetica", "", 8)
+    # ── Meta row ─────────────────────────────────────────────────────────────
+    pdf.set_x(20)
+    pdf.set_font(body, "B", 8)
     pdf.set_text_color(*sev_color)
-    pdf.cell(35, 5, sev.upper())
-    pdf.set_text_color(*dim)
-    pdf.cell(70, 5, f"fn: {_truncate(finding.function_name, 30)}")
+    pdf.cell(28, 5, sev.upper())
+
+    pdf.set_font(body, "", 8)
+    pdf.set_text_color(*muted)
     if finding.line_start is not None:
         loc = str(finding.line_start)
         if finding.line_end and finding.line_end != finding.line_start:
-            loc += f"-{finding.line_end}"
-        pdf.cell(40, 5, f"lines: {loc}")
-    conf_pct = int(finding.confidence * 100)
-    pdf.cell(0, 5, f"conf: {conf_pct}%", ln=True)
+            loc += f"–{finding.line_end}"
+        pdf.cell(32, 5, f"L{loc}")
+    pdf.cell(40, 5, _truncate(finding.function_name, 28))
+    pdf.cell(0, 5, f"{conf_pct}% confidence", ln=True)
 
-    # Root cause
-    pdf.set_xy(18, pdf.get_y())
-    pdf.set_font("Helvetica", "B", 8)
-    pdf.set_text_color(*dim)
-    pdf.cell(22, 5, "Cause:")
-    pdf.set_font("Helvetica", "", 8)
-    pdf.set_text_color(*white)
-    pdf.multi_cell(160, 5, _truncate(finding.root_cause, 100))
+    # ── Root cause ────────────────────────────────────────────────────────────
+    pdf.ln(1)
+    pdf.set_x(20)
+    pdf.set_font(body, "B", 8)
+    pdf.set_text_color(*muted)
+    pdf.cell(22, 5, "Root cause")
+    pdf.set_font(body, "", 8)
+    pdf.set_text_color(*ink)
+    pdf.multi_cell(150, 5, _truncate(finding.root_cause, 160))
 
-    # Evidence quote (monospace)
-    pdf.set_xy(18, pdf.get_y())
-    pdf.set_font("Courier", "", 7)
-    pdf.set_text_color(160, 210, 255)
-    quote = _truncate(finding.evidence_quote.replace("\n", "  "), 110)
-    pdf.cell(0, 5, f"  {quote}", ln=True)
+    # ── Evidence code block ───────────────────────────────────────────────────
+    if finding.evidence_quote.strip():
+        pdf.ln(1)
+        quote_lines = finding.evidence_quote.strip().splitlines()
+        code_y = pdf.get_y()
+        line_h = 4.5
+        block_h = len(quote_lines) * line_h + 6
+        pdf.set_fill_color(*card)
+        pdf.rect(20, code_y, 176, block_h, style="F")
+        pdf.set_fill_color(*sev_color)
+        pdf.rect(20, code_y, 2, block_h, style="F")
+        pdf.set_xy(25, code_y + 3)
+        pdf.set_font(mono, "", 7.5)
+        pdf.set_text_color(*ink)
+        for line in quote_lines:
+            pdf.set_x(25)
+            pdf.cell(0, line_h, _truncate(line, 95), ln=True)
+        pdf.ln(1)
 
-    # Remediation
-    pdf.set_xy(18, pdf.get_y())
-    pdf.set_font("Helvetica", "I", 8)
-    pdf.set_text_color(*dim)
-    pdf.multi_cell(160, 5, _truncate(f"Fix: {finding.remediation}", 120))
+    # ── Remediation ───────────────────────────────────────────────────────────
+    pdf.ln(1)
+    pdf.set_x(20)
+    pdf.set_font(body, "B", 8)
+    pdf.set_text_color(*muted)
+    pdf.cell(16, 5, "Fix")
+    pdf.set_font(body, "", 8)
+    pdf.set_text_color(*ink)
+    pdf.multi_cell(156, 5, _truncate(finding.remediation, 200))
 
-    # Move past the block
-    pdf.set_y(y + block_h + 3)
+    # Update severity stripe height
+    y1 = pdf.get_y()
+    pdf.set_fill_color(*stripe_color)
+    pdf.rect(14, y0, 3, y1 - y0, style="F")
+
+    # Divider
+    pdf.ln(3)
+    _hairline(pdf, hairline)
 
 
 def _truncate(value: str, max_len: int) -> str:
@@ -296,7 +366,7 @@ def render_project_markdown(report: ProjectAnalysisReport) -> str:
     accepted = sum(len(file_report.findings) for file_report in report.file_reports)
     rejected = sum(len(file_report.rejected_findings) for file_report in report.file_reports)
     lines = [
-        "# AISEC Analysis Report",
+        "# Reporter — Security Analysis Report",
         "",
         f"- Project ID: `{report.project_id}`",
         f"- Archive: `{report.archive_name}`",
