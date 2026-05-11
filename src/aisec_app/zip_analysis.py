@@ -3,11 +3,12 @@ from __future__ import annotations
 import hashlib
 import io
 import zipfile
+from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import PurePosixPath
 
 from .models import ProjectAnalysisReport, SourceAnalysisReport, SourceArtifact, VerificationStatus
-from .source_analysis import SourceAnalyzer
+from .source_analysis import MultiAgentSourceAnalyzer, SourceAnalyzer
 
 
 SOURCE_EXTENSIONS = {
@@ -34,11 +35,43 @@ def analyze_zip_archive(
     archive_bytes: bytes,
     analyzer: SourceAnalyzer,
     limits: ZipAnalysisLimits | None = None,
+    progress_callback: Callable[[dict], None] | None = None,
 ) -> ProjectAnalysisReport:
     active_limits = limits or ZipAnalysisLimits()
+
+    if progress_callback:
+        progress_callback({"type": "stage", "stage": "extracting", "message": "Extracting ZIP archive..."})
+
     artifacts, skipped = collect_source_artifacts(archive_bytes, active_limits)
-    file_reports = [analyzer.analyze(artifact) for artifact in artifacts]
+    total = len(artifacts)
+    file_reports: list[SourceAnalysisReport] = []
+
+    for idx, artifact in enumerate(artifacts):
+        if progress_callback:
+            progress_callback({
+                "type": "file_start",
+                "file": artifact.filename,
+                "file_index": idx + 1,
+                "total_files": total,
+                "message": f"Analyzing {artifact.filename} ({idx + 1}/{total})",
+            })
+        # Wire per-file progress into the multi-agent analyzer
+        if isinstance(analyzer, MultiAgentSourceAnalyzer) and progress_callback:
+            file_index = idx + 1
+
+            def _make_cb(f: str, fi: int, t: int, cb: Callable[[dict], None]) -> Callable[[dict], None]:
+                def inner(evt: dict) -> None:
+                    cb({**evt, "file": f, "file_index": fi, "total_files": t})
+                return inner
+
+            analyzer.progress = _make_cb(artifact.filename, file_index, total, progress_callback)
+
+        file_reports.append(analyzer.analyze(artifact))
+
     accepted_reports = [report for report in file_reports if report.findings]
+
+    if progress_callback:
+        progress_callback({"type": "stage", "stage": "finalizing", "message": "Finalizing report..."})
 
     if accepted_reports:
         status = VerificationStatus.PASS

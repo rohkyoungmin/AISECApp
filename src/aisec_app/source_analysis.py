@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import Protocol
 
@@ -77,11 +78,23 @@ class MultiAgentSourceAnalyzer:
     verifier_agent: VerifierAgent
     reporter_agent: ReporterAgent
     model: str
+    progress: Callable[[dict], None] | None = field(default=None, repr=False)
 
     def analyze(self, artifact: SourceArtifact) -> SourceAnalysisReport:
+        if self.progress:
+            self.progress({"type": "stage", "stage": "triage", "file": artifact.filename})
         triage = self.triage_agent.run(artifact)
+
+        if self.progress:
+            self.progress({"type": "stage", "stage": "finding", "file": artifact.filename})
         findings = self.finding_agent.run(artifact, triage) if triage.should_analyze else []
+
+        if self.progress:
+            self.progress({"type": "stage", "stage": "verification", "file": artifact.filename})
         reviews = [self.verifier_agent.run(artifact, finding) for finding in findings]
+
+        if self.progress:
+            self.progress({"type": "stage", "stage": "reporting", "file": artifact.filename})
         return self.reporter_agent.run(artifact, triage, reviews, self.model)
 
 

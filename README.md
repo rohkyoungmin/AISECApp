@@ -64,6 +64,23 @@ pip install -e .[api,llm]
 uvicorn aisec_app.api:app --app-dir src --reload
 ```
 
+프론트 개발 서버 실행:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+프론트 빌드 후 FastAPI에서 함께 serving:
+
+```bash
+cd frontend
+npm run build
+cd ..
+uvicorn aisec_app.api:app --app-dir src --reload
+```
+
 터미널에서 ZIP 업로드:
 
 ```bash

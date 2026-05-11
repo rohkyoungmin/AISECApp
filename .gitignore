@@ -13,3 +13,5 @@ artifacts/
 external/
 input/
 output/
+frontend/dist/
+frontend/node_modules/

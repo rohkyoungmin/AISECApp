@@ -664,3 +664,38 @@ claude-opus-4-6
 claude-haiku-4-5-20251001
 claude-sonnet-4-5-20250929
 ```
+
+## 2026-05-11 KST - Frontend 프로젝트 UI 추가 반영
+
+### 파악한 변경 범위
+
+- React/Vite 기반 `frontend/` 앱이 추가됐다.
+- FastAPI가 정적 frontend serving, project CRUD, report 조회, PDF 다운로드, analysis job/SSE stream을 지원하도록 확장됐다.
+- `ProjectStore`가 추가되어 `output/projects.json` 기준으로 프로젝트와 report summary를 관리한다.
+- ZIP 분석 파이프라인에 progress callback이 추가되어 frontend 진행 화면에서 stage/file progress를 받을 수 있다.
+- PDF export가 `fpdf2` 기반 요약 리포트를 우선 사용하고, 실패 시 기존 pure-Python PDF fallback을 사용하도록 확장됐다.
+- `frontend/dist/`, `frontend/node_modules/`를 git 제외 대상으로 추가했다.
+
+### 검증 결과
+
+```text
+npm run build
+vite build passed
+
+PYTHONPATH=src python3 -m unittest discover -s tests
+21 tests passed
+
+PYTHONPATH=src python3 - <<'PY'
+from aisec_app.api import app
+print(app.title, app.version)
+PY
+AISEC App 0.2.0
+```
+
+FastAPI TestClient smoke:
+
+```text
+GET /health -> 200
+POST /projects -> 201
+POST /projects/{project_id}/analyze with heuristic ZIP -> 200
+```
