@@ -24,5 +24,37 @@
     "expected_verdict": "vulnerable",
     "vulnerable_function": "ssl3_read_bytes",
     "vulnerable_address": "source:ssl/record/rec_layer_s3.c:1469:ssl3_read_bytes"
-  }
+  },
+  "cve_metadata": [
+    {
+      "cve_id": "CVE-2016-6305",
+      "source": "NVD",
+      "status": "Modified",
+      "published": "2016-09-26T19:59:01.597",
+      "last_modified": "2026-05-06T22:30:45.220",
+      "description": "The ssl3_read_bytes function in record/rec_layer_s3.c in OpenSSL 1.1.0 before 1.1.0a allows remote attackers to cause a denial of service (infinite loop) by triggering a zero-length record in an SSL_peek call.",
+      "weaknesses": [
+        "CWE-20"
+      ],
+      "cvss": {
+        "version": "3.0",
+        "score": 7.5,
+        "severity": "HIGH",
+        "vector": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+      },
+      "references": [
+        "http://kb.juniper.net/InfoCenter/index?page=content&id=JSA10759",
+        "http://www-01.ibm.com/support/docview.wss?uid=swg21995039",
+        "http://www.oracle.com/technetwork/security-advisory/cpuapr2018-3678067.html",
+        "http://www.oracle.com/technetwork/security-advisory/cpujan2018-3236628.html",
+        "http://www.oracle.com/technetwork/security-advisory/cpujul2017-3236622.html",
+        "http://www.oracle.com/technetwork/security-advisory/cpuoct2016-2881722.html",
+        "http://www.oracle.com/technetwork/security-advisory/cpuoct2017-3236626.html",
+        "http://www.securityfocus.com/bid/93149",
+        "http://www.securitytracker.com/id/1036879",
+        "https://bto.bluecoat.com/security-advisory/sa132"
+      ]
+    }
+  ],
+  "linked_cve_id": "CVE-2016-6305"
 }

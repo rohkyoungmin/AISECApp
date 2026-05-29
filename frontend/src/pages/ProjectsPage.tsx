@@ -6,18 +6,16 @@ import Header from "../components/Header";
 import { StatusBadge } from "../components/StatusBadge";
 
 function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString(undefined, {
-    month: "short", day: "numeric", year: "numeric",
+  return new Date(iso).toLocaleString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
   });
 }
 
-function CreateModal({
-  onClose,
-  onCreate,
-}: {
-  onClose: () => void;
-  onCreate: (p: Project) => void;
-}) {
+function CreateModal({ onClose, onCreate }: { onClose: () => void; onCreate: (p: Project) => void }) {
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -36,7 +34,7 @@ function CreateModal({
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
-        <p className="modal-title">New Project</p>
+        <h2>New Project</h2>
         <input
           className="input"
           placeholder="Project name"
@@ -47,12 +45,8 @@ function CreateModal({
         />
         <div className="modal-actions">
           <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
-          <button
-            className="btn btn-primary"
-            onClick={submit}
-            disabled={loading || !name.trim()}
-          >
-            {loading ? "Creating..." : "Create Project"}
+          <button className="btn btn-primary" onClick={submit} disabled={loading || !name.trim()}>
+            {loading ? "Creating..." : "Create"}
           </button>
         </div>
       </div>
@@ -67,61 +61,38 @@ export default function ProjectsPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    api.listProjects().then(setProjects).finally(() => setLoading(false));
+    api.listProjects()
+      .then(setProjects)
+      .finally(() => setLoading(false));
   }, []);
 
   return (
-    <div className="page-layout">
+    <div className="page">
       <Header />
       <div className="page-content">
-        {/* Page header */}
-        <div style={{
-          display: "flex",
-          alignItems: "flex-end",
-          justifyContent: "space-between",
-          marginBottom: 40,
-        }}>
-          <div>
-            <h1 style={{
-              fontFamily: "var(--font-display)",
-              fontSize: 36,
-              fontWeight: 400,
-              letterSpacing: "-0.02em",
-              color: "var(--ink)",
-              marginBottom: 4,
-            }}>
-              Projects
-            </h1>
-            {!loading && (
-              <p style={{ color: "var(--muted)", fontSize: 14 }}>
-                {projects.length} {projects.length === 1 ? "project" : "projects"}
-              </p>
-            )}
-          </div>
+        <div className="page-title-row">
+          <h1>Projects</h1>
+          <span className="spacer" />
           <button className="btn btn-primary" onClick={() => setShowCreate(true)}>
             + New Project
           </button>
         </div>
 
         {loading && (
-          <p style={{ color: "var(--muted)", fontSize: 14 }}>Loading...</p>
+          <p style={{ color: "var(--text-dim)", fontFamily: "var(--mono)", fontSize: 12 }}>
+            Loading...
+          </p>
         )}
 
         {!loading && projects.length === 0 && (
-          <div style={{
-            textAlign: "center",
-            padding: "80px 32px",
-            background: "var(--surface-card)",
-            borderRadius: "var(--r-xl)",
-          }}>
-            <p style={{ color: "var(--ink)", fontWeight: 500, fontSize: 16, marginBottom: 8 }}>
+          <div className="empty-state">
+            <div className="empty-state-icon">⬡</div>
+            <h3 style={{ color: "var(--muted)", fontFamily: "var(--head)", fontSize: 20, fontWeight: 400, letterSpacing: "-0.02em" }}>
               No projects yet
-            </p>
-            <p style={{ color: "var(--muted)", fontSize: 14, marginBottom: 28 }}>
-              Create a project to start analyzing C/C++ source code.
-            </p>
-            <button className="btn btn-primary" onClick={() => setShowCreate(true)}>
-              Create your first project
+            </h3>
+            <p>Create a project and upload a ZIP archive to start analysis.</p>
+            <button className="btn btn-outline" style={{ marginTop: 20 }} onClick={() => setShowCreate(true)}>
+              + New Project
             </button>
           </div>
         )}
@@ -130,28 +101,20 @@ export default function ProjectsPage() {
           {projects.map((project) => (
             <div
               key={project.project_id}
-              className="card-canvas card-clickable"
+              className="glow-card project-card"
               onClick={() => navigate(`/projects/${project.project_id}`)}
-              style={{ padding: "24px" }}
             >
-              <h3 style={{
-                fontSize: 15,
-                fontWeight: 500,
-                color: "var(--ink)",
-                marginBottom: 6,
-              }}>
-                {project.name}
-              </h3>
-              <p style={{ color: "var(--muted)", fontSize: 13, marginBottom: 18 }}>
-                {formatDate(project.created_at)} · {project.reports.length}{" "}
-                {project.reports.length === 1 ? "report" : "reports"}
-              </p>
-              <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+              <div className="project-card-name">{project.name}</div>
+              <div className="project-card-meta">
+                <span>{formatDate(project.created_at)}</span>
+                <span>{project.reports.length} report{project.reports.length !== 1 ? "s" : ""}</span>
+              </div>
+              <div className="project-card-reports">
                 {project.reports.slice(0, 3).map((r) => (
                   <StatusBadge key={r.report_id} status={r.verifier_status} />
                 ))}
                 {project.reports.length > 3 && (
-                  <span style={{ fontSize: 12, color: "var(--muted-soft)", alignSelf: "center" }}>
+                  <span style={{ fontSize: 10, color: "var(--text-dim)", alignSelf: "center" }}>
                     +{project.reports.length - 3} more
                   </span>
                 )}

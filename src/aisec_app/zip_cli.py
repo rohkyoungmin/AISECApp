@@ -27,6 +27,8 @@ def main() -> None:
             archive_bytes=zip_path.read_bytes(),
             analyzer=analyzer,
             limits=ZipAnalysisLimits(max_files=args.max_files),
+            enable_cve_mapping=True,
+            nvd_cache_dir=Path(args.output_dir) / "nvd_query_cache",
         )
     except LLMNotConfiguredError as exc:
         raise SystemExit(str(exc)) from exc

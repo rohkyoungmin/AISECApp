@@ -699,3 +699,217 @@ GET /health -> 200
 POST /projects -> 201
 POST /projects/{project_id}/analyze with heuristic ZIP -> 200
 ```
+
+## 2026-05-29 KST - NVD CVE metadata 연동
+
+### 구현 결과
+
+- `src/aisec_app/cve_metadata.py` 추가
+  - case 내부의 `CVE-YYYY-NNNN` 문자열 자동 탐색
+  - NVD CVE API 2.0 조회
+  - CVE description, CWE, CVSS, published/last modified date, reference URL 파싱
+  - `manifest.json`의 `cve_metadata`와 `linked_cve_id`에 저장
+- `tests/test_cve_metadata.py` 추가
+  - CVE ID 추출
+  - NVD payload parser
+  - manifest enrichment
+  - patch/decompiler scan 검증
+- README에 CVE Database 연동 명령 추가
+
+### 실행 명령
+
+```bash
+PYTHONPATH=src python3 -m aisec_app.cve_metadata data/cases --write --delay 1
+```
+
+### 실제 연동 결과
+
+```text
+Cases: 139
+Cases with CVE candidates: 2
+NVD metadata records found: 2
+Manifests updated: 2
+```
+
+연동된 case:
+
+- `magma-openssl-ssl005` → `CVE-2016-6304`
+- `magma-openssl-ssl019` → `CVE-2016-6305`
+
+### 검증 결과
+
+```text
+python3 -m unittest discover -s tests -v
+25 tests passed
+```
+
+### 한계
+
+- 현재 Magma skeleton manifest의 `cve_id` 대부분은 `MAGMA-*` 내부 ID라서 NVD에 직접 조회할 수 없다.
+- 따라서 이번 연동은 patch/advisory/decompiler 안에 실제 CVE ID가 명시된 case만 대상으로 한다.
+- 나머지 case는 upstream advisory 또는 Magma mapping을 추가 확보한 뒤 CVE ID를 보강해야 한다.
+
+## 2026-05-29 KST - Deterministic confidence calibration 추가
+
+### 구현 결과
+
+- `source_analysis.py`의 finding confidence를 LLM 자기평가 값에서 deterministic rule 기반 점수로 변경했다.
+- `FindingAgent`가 어떤 confidence를 반환하더라도 verification 직전에 `calibrate_finding_confidence()`가 최종 confidence를 재계산한다.
+- 점수 계산 기준:
+  - vulnerable verdict
+  - evidence quote가 실제 source에 존재하는지
+  - line reference가 source 범위 안에 있는지
+  - root cause/remediation 존재 여부
+  - evidence 안의 dangerous operation 가중치 (`gets`, `strcpy`, `strcat`, `sprintf`, `memcpy`, `scanf`, `recv`, `fread`)
+  - source 안에 function name이 실제로 존재하는지
+  - finding 주변의 mitigation/bounds check pattern 감점
+- Verifier rule 강화:
+  - deterministic confidence threshold 미달 시 reject
+  - high/critical finding인데 evidence에 dangerous operation이 없으면 reject
+  - 주변 mitigation 또는 bounds handling이 보이면 reject
+
+### 의도
+
+Claude가 반환한 `confidence: 0.94` 같은 블랙박스 자기평가를 그대로 쓰지 않고, 같은 source와 같은 finding이면 항상 같은 confidence가 나오도록 고정했다. 따라서 새로운 ZIP 파일이 들어와도 동일한 증거 구조에는 동일한 점수가 부여된다.
+
+### 검증 결과
+
+```text
+python3 -m unittest discover -s tests -v
+27 tests passed
+```
+
+## 2026-05-29 KST - Final evaluation automation 추가
+
+### 구현 결과
+
+- `agent.md` 추가
+  - 다음 agent가 따라야 할 자동화 지시와 stop condition 정리
+  - Magma patch evidence leakage 금지 원칙 명시
+  - frontend는 이번 단계에서 수정하지 않도록 제한
+- `src/aisec_app/cve_mapping.py` 추가
+  - source artifact와 local NVD metadata를 이용한 CVE candidate smoke mapping
+  - CVE ID mention, description keyword overlap, CWE mention 기반 deterministic candidate score
+- `src/aisec_app/final_evaluation.py` 추가
+  - `output/evaluation/evaluation.json` 생성
+  - `output/evaluation/evaluation.md` 생성
+  - Full Magma Sweep, NVD metadata, verifier reliability, robustness, LLM sample cache 평가 통합
+  - LLM API는 대표 샘플 최대 3회로 제한하고, `output/evaluation/ai_sample_reports/*.json` 캐시 재사용
+- README에 최종 평가 명령 추가
+
+### 실행 명령
+
+```bash
+PYTHONPATH=src python3 -m aisec_app.final_evaluation --output-dir output/evaluation --max-llm-calls 3
+```
+
+### 실제 평가 결과
+
+```text
+Dataset contract: 139/139 cases loaded
+Full Magma Sweep: detection 2/139 (1.44%)
+Function Localization: 2/139 (1.44%)
+Verifier distribution: pass=2, reject=137, needs_review=0
+NVD metadata: 2 CVE-linked cases, 2 metadata records
+Verifier reliability: 4/4 synthetic checks passed
+System robustness: unittest pass, ZIP filtering pass, report export pass
+Cost-limited LLM first run: 3 API calls, 0 cache hits
+Cost-limited LLM repeat run: 0 API calls, 3 cache hits
+```
+
+LLM sample 결과:
+
+- `demo_vulnerable_strcpy`: accepted finding 1
+- `mitigation_reject_strcpy`: rejected finding 1
+- `demo_memcpy_overflow`: accepted finding 1
+- `nvd_linked_openssl_cases`: skeleton evidence leakage 방지를 위해 LLM 실행 제외
+
+### 해석
+
+- Magma benchmark 자체는 ground truth이므로 completed case에서는 높은 탐지율이 나와야 한다.
+- 현재 repository의 139개 case는 모두 skeleton 또는 placeholder artifact를 포함하므로, 2/139 baseline은 completed-Magma 탐지율이 아니다.
+- `evaluation.md`에서는 2/139를 최종 accuracy로 내세우지 않고, raw skeleton-inclusive count로만 표시한다.
+- 최종 성능 표기는 `Completed Magma Detection: not measurable yet`, `Runnable smoke baseline: 2/2 passed`로 분리했다.
+- 이 결과는 data contract, strict verifier behavior, report/evaluation 자동화가 end-to-end로 동작함을 보여주는 readiness baseline이다.
+- Magma patch-derived evidence는 analyzer 입력으로 사용하지 않았고, label은 scoring/readiness 판단에만 사용한다.
+
+### 검증 결과
+
+```text
+python3 -m unittest discover -s tests -v
+27 tests passed
+
+PYTHONPATH=src python3 -m aisec_app.evaluation data/cases
+Detection Accuracy: 2/139 (1.44%)
+Function Localization Accuracy: 2/139 (1.44%)
+
+PYTHONPATH=src python3 -m aisec_app.cve_metadata data/cases --json --delay 0
+metadata_found: 2
+
+PYTHONPATH=src python3 -m aisec_app.final_evaluation --output-dir output/evaluation --max-llm-calls 3
+evaluation artifacts written; repeat run used 3 cached LLM reports
+```
+
+## 2026-05-29 KST - Live NVD candidate mapping + frontend report 연동
+
+### 구현 결과
+
+- `src/aisec_app/cve_metadata.py`
+  - NVD `keywordSearch` 조회 함수 추가
+  - NVD response의 multiple CVE item parser 추가
+- `src/aisec_app/cve_mapping.py`
+  - `NVDMappingAgent`: source artifact에서 query를 만들고 NVD keywordSearch 실행
+  - `CVECandidateEvaluationAgent`: source와 NVD metadata 관련성 deterministic score 산정
+  - `CVECandidateVerifierAgent`: score, metadata, match reason 기준으로 verified candidate 판정
+  - query cache 지원: `output/nvd_query_cache`, `output/evaluation/nvd_query_cache`
+- `src/aisec_app/models.py`
+  - `CVECandidateSummary` 추가
+  - `ProjectAnalysisReport.cve_candidates` 추가
+- `src/aisec_app/zip_analysis.py`
+  - ZIP 분석 중 NVD CVE candidate mapping stage 추가
+  - CVE 후보 context를 LLM finding prompt에 전달
+  - source evidence quote는 여전히 uploaded source에서만 허용
+- `src/aisec_app/source_analysis.py`
+  - Finding prompt에 external CVE candidate context 추가
+  - CVE context를 evidence quote로 쓰지 말라는 rule 추가
+- `src/aisec_app/api.py`, `src/aisec_app/zip_cli.py`
+  - 실제 ZIP 분석 API/CLI에서 CVE mapping 활성화
+- `frontend/src/types.ts`, `frontend/src/pages/ReportPage.tsx`, `frontend/src/global.css`
+  - Report Page에 기존 디자인 톤을 유지한 `Mapped CVE Candidates` 섹션 추가
+  - CVE ID, verified/candidate badge, CVSS, score, NVD description, match reason, verifier rationale 표시
+- `report_export.py`
+  - Markdown report에 mapped CVE candidates 섹션 추가
+
+### 실제 smoke 결과
+
+```text
+Input ZIP: openssl/status_request.c
+NVD candidates: CVE-2016-6304, CVE-2000-0535, CVE-2002-0656 ...
+Summary: Analyzed 1 source files and found grounded findings in 1 files. Mapped 5 NVD CVE candidate(s).
+Accepted findings: 1
+```
+
+### 검증 결과
+
+```text
+python3 -m unittest discover -s tests -v
+27 tests passed
+
+npm run build
+vite build passed
+
+PYTHONPATH=src python3 -m aisec_app.final_evaluation --output-dir output/evaluation --max-llm-calls 3
+evaluation artifacts regenerated
+
+PYTHONPATH=src python3 - <<'PY'
+from aisec_app.api import app
+print(app.title, app.version)
+PY
+AISEC App 0.2.0
+```
+
+### 한계
+
+- NVD keywordSearch는 NVD description 기반 검색이므로, 정확한 product/version/CPE 매핑보다 느슨하다.
+- 현재는 top-k candidate를 source overlap과 deterministic score로 정렬한다.
+- 실제 CVE mapping Top-k Recall 평가는 별도의 labeled ZIP-to-CVE dataset이 있어야 가능하다.

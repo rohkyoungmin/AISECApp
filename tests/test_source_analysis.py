@@ -80,6 +80,68 @@ class SourceAnalysisTests(unittest.TestCase):
         self.assertEqual(len(report.findings), 0)
         self.assertIn("line range", report.verifier_rationale)
 
+    def test_confidence_is_deterministic_not_model_supplied(self) -> None:
+        artifact = SourceArtifact(filename="sample.c", content="void f(char *s) { strcpy(buf, s); }\n")
+        base_payload = {
+            "title": "unsafe copy",
+            "verdict": "vulnerable",
+            "severity": "medium",
+            "function_name": "f",
+            "line_start": 1,
+            "line_end": 1,
+            "root_cause": "unbounded copy",
+            "evidence_quote": "void f(char *s) { strcpy(buf, s); }",
+            "remediation": "add bounds check",
+        }
+
+        low_model_confidence = verify_source_report(
+            artifact,
+            {"findings": [{**base_payload, "confidence": 0.01}]},
+            model="test",
+        )
+        high_model_confidence = verify_source_report(
+            artifact,
+            {"findings": [{**base_payload, "confidence": 0.99}]},
+            model="test",
+        )
+
+        self.assertEqual(low_model_confidence.findings[0].confidence, high_model_confidence.findings[0].confidence)
+        self.assertEqual(low_model_confidence.findings[0].confidence, 0.99)
+
+    def test_nearby_mitigation_reduces_confidence_and_rejects(self) -> None:
+        artifact = SourceArtifact(
+            filename="sample.c",
+            content=(
+                "void f(char *s, size_t n) {\n"
+                "  if (n < sizeof(buf)) {\n"
+                "    strcpy(buf, s);\n"
+                "  }\n"
+                "}\n"
+            ),
+        )
+        payload = {
+            "findings": [
+                {
+                    "title": "unsafe copy",
+                    "verdict": "vulnerable",
+                    "severity": "high",
+                    "function_name": "f",
+                    "line_start": 3,
+                    "line_end": 3,
+                    "confidence": 0.99,
+                    "root_cause": "unbounded copy",
+                    "evidence_quote": "strcpy(buf, s);",
+                    "remediation": "add bounds check",
+                }
+            ],
+        }
+
+        report = verify_source_report(artifact, payload, model="test")
+
+        self.assertEqual(report.verifier_status, VerificationStatus.REJECT)
+        self.assertEqual(report.rejected_findings[0].confidence, 0.74)
+        self.assertIn("nearby mitigation", report.verifier_rationale)
+
     def test_build_source_analyzer_requires_key_by_default(self) -> None:
         old_key = os.environ.get("ANTHROPIC_API_KEY")
         os.environ["ANTHROPIC_API_KEY"] = ""

@@ -131,6 +131,8 @@ async def start_analysis(
                 analyzer=analyzer,
                 limits=ZipAnalysisLimits(max_files=max_files),
                 progress_callback=emit,
+                enable_cve_mapping=True,
+                nvd_cache_dir=_STORE_DIR / "nvd_query_cache",
             )
 
             emit({"type": "stage", "stage": "saving", "message": "Saving report..."})

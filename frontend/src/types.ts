@@ -39,6 +39,20 @@ export interface FileReport {
   rejected_findings: SourceFinding[];
 }
 
+export interface CVECandidate {
+  cve_id: string;
+  source: string;
+  score: number;
+  match_reasons: string[];
+  description: string;
+  weaknesses: string[];
+  cvss_score: number | null;
+  cvss_severity: string;
+  references: string[];
+  verified: boolean;
+  verifier_rationale: string;
+}
+
 export interface ProjectReport {
   project_id: string;
   archive_name: string;
@@ -48,6 +62,7 @@ export interface ProjectReport {
   verifier_status: "pass" | "reject" | "needs_review";
   summary: string;
   file_reports: FileReport[];
+  cve_candidates: CVECandidate[];
 }
 
 export interface ProgressEvent {

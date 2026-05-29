@@ -108,6 +108,7 @@ class AnalysisReport:
 class SourceArtifact:
     filename: str
     content: str
+    context: str = ""
 
 
 @dataclass(slots=True)
@@ -141,6 +142,21 @@ class SourceAnalysisReport:
 
 
 @dataclass(slots=True)
+class CVECandidateSummary:
+    cve_id: str
+    source: str
+    score: float
+    match_reasons: list[str] = field(default_factory=list)
+    description: str = ""
+    weaknesses: list[str] = field(default_factory=list)
+    cvss_score: float | None = None
+    cvss_severity: str = ""
+    references: list[str] = field(default_factory=list)
+    verified: bool = False
+    verifier_rationale: str = ""
+
+
+@dataclass(slots=True)
 class ProjectAnalysisReport:
     project_id: str
     archive_name: str
@@ -150,6 +166,7 @@ class ProjectAnalysisReport:
     verifier_status: VerificationStatus
     summary: str
     file_reports: list[SourceAnalysisReport] = field(default_factory=list)
+    cve_candidates: list[CVECandidateSummary] = field(default_factory=list)
 
     def to_dict(self) -> dict[str, object]:
         return asdict(self)

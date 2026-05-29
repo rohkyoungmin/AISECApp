@@ -24,5 +24,37 @@
     "expected_verdict": "vulnerable",
     "vulnerable_function": "tls_parse_ctos_status_request",
     "vulnerable_address": "source:ssl/statem/extensions_srvr.c:357:tls_parse_ctos_status_request"
-  }
+  },
+  "cve_metadata": [
+    {
+      "cve_id": "CVE-2016-6304",
+      "source": "NVD",
+      "status": "Modified",
+      "published": "2016-09-26T19:59:00.157",
+      "last_modified": "2026-05-06T22:30:45.220",
+      "description": "Multiple memory leaks in t1_lib.c in OpenSSL before 1.0.1u, 1.0.2 before 1.0.2i, and 1.1.0 before 1.1.0a allow remote attackers to cause a denial of service (memory consumption) via large OCSP Status Request extensions.",
+      "weaknesses": [
+        "CWE-401"
+      ],
+      "cvss": {
+        "version": "3.1",
+        "score": 7.5,
+        "severity": "HIGH",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+      },
+      "references": [
+        "http://kb.juniper.net/InfoCenter/index?page=content&id=JSA10759",
+        "http://lists.opensuse.org/opensuse-security-announce/2016-09/msg00022.html",
+        "http://lists.opensuse.org/opensuse-security-announce/2016-09/msg00023.html",
+        "http://lists.opensuse.org/opensuse-security-announce/2016-09/msg00024.html",
+        "http://lists.opensuse.org/opensuse-security-announce/2016-09/msg00031.html",
+        "http://lists.opensuse.org/opensuse-security-announce/2016-10/msg00005.html",
+        "http://lists.opensuse.org/opensuse-security-announce/2016-10/msg00011.html",
+        "http://lists.opensuse.org/opensuse-security-announce/2016-10/msg00012.html",
+        "http://lists.opensuse.org/opensuse-security-announce/2016-10/msg00013.html",
+        "http://lists.opensuse.org/opensuse-security-announce/2016-10/msg00021.html"
+      ]
+    }
+  ],
+  "linked_cve_id": "CVE-2016-6304"
 }
