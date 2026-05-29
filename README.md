@@ -318,11 +318,7 @@ PYTHONPATH=src python3 -m aisec_app.final_evaluation --output-dir output/evaluat
 
 ## AI 협업 및 Prompting Log
 
-이 프로젝트는 AI coding agent를 디렉팅하며 구현했습니다. 협업 과정은 아래 문서에 남겨져 있습니다.
-
-- `agent.md`: 자동화 프롬프트, 중단 기준, 삭제 금지 규칙, 테스트 기준
-- `docs/implementation-log.md`: 구현 히스토리, 테스트 명령, 설계 변경 기록
-- `docs/final-demo-day-direction.md`: 최종 발표 방향과 평가 기준 정리
+이 프로젝트는 AI coding agent를 디렉팅하며 구현했습니다. 최종 제출본에서는 README 하나만으로 프로젝트 개요, 아키텍처, 실행 방법, 평가 방식, AI 협업 전략을 확인할 수 있도록 정리했습니다.
 
 AI 협업 전략:
 
@@ -337,11 +333,9 @@ AI 협업 전략:
 
 ```text
 data/                Magma case 및 평가 데이터
-docs/                최종 방향 문서, 구현 로그, 발표 자료
 frontend/            React/Vite frontend
 src/aisec_app/       backend, agent, NVD 연동, 평가, report export
 tests/               backend regression test
-agent.md             automation prompt 및 safety rule
 ```
 
 ## 한 줄 소개
