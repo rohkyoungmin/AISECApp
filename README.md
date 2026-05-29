@@ -153,10 +153,6 @@ Magma는 실제 취약점 ground truth를 제공하는 benchmark입니다. Demo 
 | 판정 형태 | case별 accept/reject verdict |
 | ground truth 사용 위치 | 분석 이후 scoring 및 validation |
 
-표현상 주의할 점은, 100%가 "LLM을 무조건 믿었다"는 뜻이 아니라는 것입니다. 100%는 전체 Magma case가 빠짐없이 판정되었다는 의미이며, 최종 accept/reject는 verifier rule을 거쳐 결정됩니다.
-
-또한 Magma patch를 evidence로 변환해 analyzer에게 직접 주는 방식은 사용하지 않습니다. Magma label은 정답지로서 scoring과 validation에 사용하고, analyzer는 source와 NVD 후보를 기반으로 finding을 생성합니다.
-
 ## 최종 평가 산출물
 
 Demo Day 제출용 평가 산출물은 아래 명령으로 생성합니다.
