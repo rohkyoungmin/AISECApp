@@ -123,6 +123,7 @@ class SourceFinding:
     root_cause: str
     evidence_quote: str
     remediation: str
+    linked_cves: list[str] = field(default_factory=list)
 
 
 @dataclass(slots=True)

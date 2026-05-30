@@ -14,18 +14,66 @@ function formatDate(iso: string) {
 
 function ConfidenceBar({ value }: { value: number }) {
   const pct = Math.round(value * 100);
-  const color = pct >= 80 ? "var(--red)" : pct >= 60 ? "var(--orange)" : "var(--blue)";
+  const color = pct >= 80 ? "var(--red)" : pct >= 60 ? "var(--orange)" : "var(--primary)";
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-      <div style={{ flex: 1, height: 4, background: "var(--bg3)", borderRadius: 2, overflow: "hidden" }}>
+      <div style={{ flex: 1, height: 3, background: "var(--surface-strong)", borderRadius: 2, overflow: "hidden" }}>
         <div style={{ width: `${pct}%`, height: "100%", background: color, borderRadius: 2 }} />
       </div>
-      <span style={{ fontFamily: "var(--mono)", fontSize: 11, color, minWidth: 36 }}>{pct}%</span>
+      <span style={{ fontFamily: "var(--mono)", fontSize: 11, color, minWidth: 34 }}>{pct}%</span>
     </div>
   );
 }
 
-function FindingCard({ finding, accepted }: { finding: SourceFinding; accepted: boolean }) {
+function LinkedCVERow({ cveId, cve }: { cveId: string; cve: CVECandidate | undefined }) {
+  const severityColor = cve?.cvss_severity
+    ? { HIGH: "var(--orange)", CRITICAL: "var(--red)", MEDIUM: "var(--yellow)", LOW: "var(--primary)" }[cve.cvss_severity.toUpperCase()] ?? "var(--primary)"
+    : "var(--primary)";
+
+  return (
+    <div style={{
+      display: "flex", alignItems: "flex-start", gap: 10,
+      background: "var(--surface-soft)", borderRadius: "var(--radius)",
+      padding: "8px 12px", border: "1px solid var(--hairline-soft)",
+    }}>
+      <span style={{
+        fontFamily: "var(--mono)", fontSize: 12, fontWeight: 700,
+        color: "var(--primary)", whiteSpace: "nowrap", marginTop: 1,
+      }}>
+        {cveId}
+      </span>
+      {cve ? (
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 3 }}>
+            {cve.cvss_score != null && (
+              <span style={{ fontFamily: "var(--mono)", fontSize: 11, color: severityColor, fontWeight: 600 }}>
+                CVSS {cve.cvss_score} {cve.cvss_severity}
+              </span>
+            )}
+            {cve.weaknesses.length > 0 && (
+              <span style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--muted)" }}>
+                {cve.weaknesses.slice(0, 2).join(", ")}
+              </span>
+            )}
+          </div>
+          <p style={{ fontSize: 12, color: "var(--body-color)", lineHeight: 1.5, margin: 0 }}>
+            {cve.description.length > 200 ? cve.description.slice(0, 200) + "…" : cve.description}
+          </p>
+        </div>
+      ) : (
+        <span style={{ fontSize: 12, color: "var(--muted)" }}>CVE details unavailable</span>
+      )}
+    </div>
+  );
+}
+
+function FindingCard({
+  finding, accepted, cveMap,
+}: {
+  finding: SourceFinding;
+  accepted: boolean;
+  cveMap: Map<string, CVECandidate>;
+}) {
   const [open, setOpen] = useState(accepted);
   const loc = finding.line_start != null
     ? finding.line_end != null && finding.line_end !== finding.line_start
@@ -39,12 +87,17 @@ function FindingCard({ finding, accepted }: { finding: SourceFinding; accepted: 
         <SeverityBadge status={finding.severity} />
         <span className="finding-card-title">{finding.title}</span>
         {!accepted && (
-          <span style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--text-dim)" }}>REJECTED</span>
+          <span style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--muted)" }}>REJECTED</span>
+        )}
+        {accepted && finding.linked_cves && finding.linked_cves.length > 0 && (
+          <span style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--primary)", background: "var(--primary-dim)", padding: "2px 7px", borderRadius: 9999, border: "1px solid rgba(26,92,53,0.2)" }}>
+            {finding.linked_cves[0]}{finding.linked_cves.length > 1 ? ` +${finding.linked_cves.length - 1}` : ""}
+          </span>
         )}
         {loc && (
-          <span style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--text-dim)" }}>{loc}</span>
+          <span style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--muted)" }}>{loc}</span>
         )}
-        <span style={{ color: "var(--text-dim)", fontSize: 12 }}>{open ? "▲" : "▼"}</span>
+        <span style={{ color: "var(--muted-soft)", fontSize: 11 }}>{open ? "▲" : "▼"}</span>
       </div>
 
       {open && (
@@ -74,13 +127,24 @@ function FindingCard({ finding, accepted }: { finding: SourceFinding; accepted: 
             <label>Remediation</label>
             <p>{finding.remediation}</p>
           </div>
+
+          {accepted && finding.linked_cves && finding.linked_cves.length > 0 && (
+            <div className="finding-field">
+              <label>Linked CVEs</label>
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                {finding.linked_cves.map((cveId) => (
+                  <LinkedCVERow key={cveId} cveId={cveId} cve={cveMap.get(cveId)} />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
   );
 }
 
-function FileReportSection({ report }: { report: FileReport }) {
+function FileReportSection({ report, cveMap }: { report: FileReport; cveMap: Map<string, CVECandidate> }) {
   const [open, setOpen] = useState(report.findings.length > 0);
   const totalFindings = report.findings.length + report.rejected_findings.length;
 
@@ -103,11 +167,11 @@ function FileReportSection({ report }: { report: FileReport }) {
 
           {report.findings.length > 0 && (
             <>
-              <p style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--green)", marginBottom: 6, letterSpacing: "0.1em" }}>
-                ✓ ACCEPTED FINDINGS
+              <p style={{ fontFamily: "var(--sans)", fontSize: 11, fontWeight: 600, color: "var(--primary)", marginBottom: 6, letterSpacing: "0", textTransform: "uppercase" }}>
+                Accepted Findings
               </p>
               {report.findings.map((f, i) => (
-                <FindingCard key={i} finding={f} accepted />
+                <FindingCard key={i} finding={f} accepted cveMap={cveMap} />
               ))}
             </>
           )}
@@ -115,13 +179,13 @@ function FileReportSection({ report }: { report: FileReport }) {
           {report.rejected_findings.length > 0 && (
             <>
               <p style={{
-                fontFamily: "var(--mono)", fontSize: 10, color: "var(--text-dim)",
-                marginBottom: 6, marginTop: 12, letterSpacing: "0.1em",
+                fontFamily: "var(--sans)", fontSize: 11, fontWeight: 600, color: "var(--muted)",
+                marginBottom: 6, marginTop: 16, letterSpacing: "0", textTransform: "uppercase",
               }}>
-                ✗ REJECTED FINDINGS
+                Rejected Findings
               </p>
               {report.rejected_findings.map((f, i) => (
-                <FindingCard key={i} finding={f} accepted={false} />
+                <FindingCard key={i} finding={f} accepted={false} cveMap={cveMap} />
               ))}
             </>
           )}
@@ -141,7 +205,7 @@ function CVECandidateSection({ candidates }: { candidates: CVECandidate[] }) {
   return (
     <div className="glow-card" style={{ marginBottom: 24 }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 14 }}>
-        <h2 style={{ fontSize: 14, color: "var(--blue)" }}>Mapped CVE Candidates</h2>
+        <h2 style={{ fontFamily: "var(--head)", fontSize: 20, fontWeight: 400, letterSpacing: "0", color: "var(--ink)" }}>Mapped CVE Candidates</h2>
         <span style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--text-dim)" }}>
           NVD keywordSearch
         </span>
@@ -285,7 +349,7 @@ export default function ReportPage() {
             <span className="report-stat-lbl">Files</span>
           </div>
           <div className="report-stat-box">
-            <span className="report-stat-val" style={{ color: totalAccepted > 0 ? "var(--red)" : "var(--green)" }}>
+            <span className="report-stat-val" style={{ color: totalAccepted > 0 ? "var(--red)" : "var(--primary)" }}>
               {totalAccepted}
             </span>
             <span className="report-stat-lbl">Accepted</span>
@@ -298,8 +362,8 @@ export default function ReportPage() {
             bySeverity[sev] ? (
               <div key={sev} className="report-stat-box">
                 <span className="report-stat-val" style={{
-                  color: sev === "critical" ? "#ff4466" : sev === "high" ? "var(--orange)" :
-                         sev === "medium" ? "var(--yellow)" : "var(--blue)",
+                  color: sev === "critical" ? "var(--red)" : sev === "high" ? "var(--orange)" :
+                         sev === "medium" ? "var(--yellow)" : "var(--primary)",
                 }}>
                   {bySeverity[sev]}
                 </span>
@@ -316,9 +380,12 @@ export default function ReportPage() {
 
         {/* File reports */}
         <div>
-          {report.file_reports.map((fr, i) => (
-            <FileReportSection key={i} report={fr} />
-          ))}
+          {(() => {
+            const cveMap = new Map((report.cve_candidates ?? []).map((c) => [c.cve_id, c]));
+            return report.file_reports.map((fr, i) => (
+              <FileReportSection key={i} report={fr} cveMap={cveMap} />
+            ));
+          })()}
         </div>
 
         {report.skipped_files.length > 0 && (

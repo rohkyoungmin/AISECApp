@@ -25,6 +25,7 @@ export interface SourceFinding {
   root_cause: string;
   evidence_quote: string;
   remediation: string;
+  linked_cves?: string[];
 }
 
 export interface FileReport {

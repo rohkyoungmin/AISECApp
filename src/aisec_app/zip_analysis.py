@@ -10,7 +10,7 @@ from pathlib import PurePosixPath
 
 from .cve_mapping import map_cve_candidates_from_sources
 from .models import CVECandidateSummary, ProjectAnalysisReport, SourceAnalysisReport, SourceArtifact, VerificationStatus
-from .source_analysis import MultiAgentSourceAnalyzer, SourceAnalyzer
+from .source_analysis import MultiAgentSourceAnalyzer, SourceAnalyzer, build_finding_cve_linker
 
 
 SOURCE_EXTENSIONS = {
@@ -90,6 +90,12 @@ def analyze_zip_archive(
             analyzer.progress = _make_cb(artifact.filename, file_index, total, progress_callback)
 
         file_reports.append(analyzer.analyze(artifact))
+
+    # Link accepted findings to CVE candidates
+    if cve_candidates and any(r.findings for r in file_reports):
+        linker = build_finding_cve_linker()
+        if linker is not None:
+            file_reports = linker.link(file_reports, cve_candidates)
 
     accepted_reports = [report for report in file_reports if report.findings]
 

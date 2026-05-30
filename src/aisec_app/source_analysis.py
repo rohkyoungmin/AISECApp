@@ -8,7 +8,7 @@ from dataclasses import dataclass, field, replace
 from typing import Protocol
 
 from .config import ClaudeSettings, load_claude_settings
-from .models import SourceAnalysisReport, SourceArtifact, SourceFinding, Verdict, VerificationStatus
+from .models import CVECandidateSummary, SourceAnalysisReport, SourceArtifact, SourceFinding, Verdict, VerificationStatus
 
 
 class LLMNotConfiguredError(RuntimeError):
@@ -403,6 +403,87 @@ def build_source_analyzer(require_llm: bool = True, force_heuristic: bool = Fals
     if require_llm:
         raise LLMNotConfiguredError("ANTHROPIC_API_KEY is not configured. Copy .env.example to .env and set it.")
     return HeuristicSourceAnalyzer()
+
+
+class ClaudeFindingCVELinker:
+    """Single Claude call that links accepted findings to relevant CVE candidates."""
+
+    def __init__(self, client: ClaudeClient) -> None:
+        self._client = client
+
+    def link(
+        self,
+        file_reports: list[SourceAnalysisReport],
+        cve_candidates: list[CVECandidateSummary],
+    ) -> list[SourceAnalysisReport]:
+        all_findings = [
+            (report.filename, i, finding)
+            for report in file_reports
+            for i, finding in enumerate(report.findings)
+        ]
+        if not all_findings or not cve_candidates:
+            return file_reports
+
+        findings_text = "\n".join(
+            f"- key=\"{fn}::{f.title}\" severity={f.severity} "
+            f"root_cause=\"{f.root_cause[:120]}\""
+            for fn, _, f in all_findings
+        )
+        cves_text = "\n".join(
+            f"- {c.cve_id} CVSS={c.cvss_score or '?'} {c.cvss_severity} "
+            f"CWE={','.join(c.weaknesses) or 'unknown'}: {c.description[:200]}"
+            for c in cve_candidates
+        )
+
+        try:
+            payload = self._client.complete_json(
+                system=(
+                    "You are a security analyst linking findings to CVE candidates. "
+                    "Only link a CVE when the vulnerability class genuinely matches. "
+                    "Return JSON only."
+                ),
+                user=f"""For each finding, list CVE IDs that match its vulnerability class (0–3 per finding).
+
+Findings:
+{findings_text}
+
+CVE Candidates:
+{cves_text}
+
+Return JSON:
+{{
+  "links": [
+    {{"key": "filename::finding title", "cve_ids": ["CVE-XXXX-XXXX"]}}
+  ]
+}}
+""",
+            )
+        except Exception:
+            return file_reports
+
+        link_map: dict[str, list[str]] = {}
+        for item in payload.get("links") or []:
+            if isinstance(item, dict):
+                key = item.get("key")
+                ids = item.get("cve_ids")
+                if isinstance(key, str) and isinstance(ids, list):
+                    link_map[key] = [str(c) for c in ids if isinstance(c, str)]
+
+        updated: list[SourceAnalysisReport] = []
+        for report in file_reports:
+            new_findings = [
+                replace(f, linked_cves=link_map.get(f"{report.filename}::{f.title}", []))
+                for f in report.findings
+            ]
+            updated.append(replace(report, findings=new_findings))
+        return updated
+
+
+def build_finding_cve_linker() -> ClaudeFindingCVELinker | None:
+    settings = load_claude_settings()
+    if not settings.is_configured:
+        return None
+    return ClaudeFindingCVELinker(ClaudeClient(settings=settings))
 
 
 def verify_source_report(artifact: SourceArtifact, payload: dict[str, object], model: str) -> SourceAnalysisReport:
