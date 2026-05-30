@@ -3,11 +3,11 @@ import { useNavigate, useParams } from "react-router-dom";
 import type { ProgressEvent } from "../types";
 
 const STAGES = [
-  { id: "extracting", icon: "📦", label: "EXTRACT" },
-  { id: "triage",     icon: "🔍", label: "TRIAGE"  },
-  { id: "finding",    icon: "⚡",  label: "FINDING" },
-  { id: "verification", icon: "🛡", label: "VERIFY" },
-  { id: "reporting",  icon: "📊", label: "REPORT"  },
+  { id: "extracting", icon: "I",   label: "EXTRACT" },
+  { id: "triage",     icon: "II",  label: "TRIAGE"  },
+  { id: "finding",    icon: "III", label: "FINDING" },
+  { id: "verification", icon: "IV", label: "VERIFY" },
+  { id: "reporting",  icon: "V",   label: "REPORT"  },
 ] as const;
 
 type StageId = typeof STAGES[number]["id"];
@@ -43,7 +43,7 @@ export default function ProgressPage() {
 
   useEffect(() => {
     if (!jobId) return;
-    const es = new EventSource(`/jobs/${jobId}/stream`);
+    const es = new EventSource(`/api/jobs/${jobId}/stream`);
 
     es.onmessage = (event) => {
       let data: ProgressEvent;
@@ -105,7 +105,7 @@ export default function ProgressPage() {
   return (
     <div className="progress-page">
       <p className="progress-title">
-        {failed ? "⚠ ANALYSIS FAILED" : currentStageId === "saving" ? "✓ SAVING REPORT..." : "ANALYZING..."}
+        {failed ? "ANALYSIS FAILED" : currentStageId === "saving" ? "SAVING REPORT..." : "ANALYZING..."}
       </p>
 
       {/* Pipeline visualization */}

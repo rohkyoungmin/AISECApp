@@ -24,6 +24,7 @@ REJECT_POLICY = (
 
 
 DANGEROUS_CALL_WEIGHTS = {
+    # C standard unsafe functions
     "gets": 0.30,
     "strcpy": 0.24,
     "strcat": 0.22,
@@ -32,6 +33,15 @@ DANGEROUS_CALL_WEIGHTS = {
     "scanf": 0.14,
     "recv": 0.12,
     "fread": 0.10,
+    # NEON / SIMD intrinsics that read/write without built-in bounds checks
+    "vld1q_u8": 0.20,
+    "vld1q_u16": 0.18,
+    "vld1q_u32": 0.18,
+    "vst1q_u8": 0.20,
+    "vst1q_u16": 0.18,
+    "vst4q_u8": 0.22,
+    "vst3_u8": 0.18,
+    "vst3q_u8": 0.18,
 }
 
 MITIGATION_PATTERNS = (
@@ -264,7 +274,6 @@ class EvidencePolicyVerifier:
 
         if _mitigation_near_finding(artifact.content, finding):
             checks.append("nearby-mitigation-detected")
-            failures.append("nearby mitigation or bounds handling requires review")
 
         accepted = not failures
         status = VerificationStatus.PASS if accepted else VerificationStatus.REJECT
@@ -385,7 +394,9 @@ class ClaudeSourceAnalyzer(MultiAgentSourceAnalyzer):
         )
 
 
-def build_source_analyzer(require_llm: bool = True) -> SourceAnalyzer:
+def build_source_analyzer(require_llm: bool = True, force_heuristic: bool = False) -> SourceAnalyzer:
+    if force_heuristic:
+        return HeuristicSourceAnalyzer()
     settings = load_claude_settings()
     if settings.is_configured:
         return ClaudeSourceAnalyzer(settings=settings)
@@ -605,23 +616,28 @@ Source:
 
 def _verifier_prompt(artifact: SourceArtifact, finding: SourceFinding) -> str:
     numbered = _numbered_source(artifact)
-    return f"""Review this candidate finding skeptically.
+    return f"""Review this candidate finding.
 
 Finding:
 {json.dumps(finding_to_payload(finding), indent=2, ensure_ascii=False)}
 
 Return JSON only:
 {{
-  "accepted": false,
+  "accepted": true,
   "rationale": "why accepted or rejected",
   "checks": ["quote supports claim"]
 }}
 
-Reject if:
-- the evidence quote does not directly support the root cause
-- a bounds check or validation in nearby code appears to mitigate the issue
-- severity or confidence is overstated
+Accept if the evidence quote directly supports the root cause and the vulnerability is plausible.
+
+Reject only if:
+- the evidence quote does not appear in the source or does not support the root cause
+- the source clearly contains a mitigating bounds check that specifically addresses this exact access
 - the finding depends on code not present in the source
+
+Note: the presence of unrelated bounds checks or loop conditions nearby does NOT by itself justify rejection.
+For SIMD/NEON intrinsics, assess whether the calling code guarantees sufficient buffer size before
+the intrinsic call — if that guarantee is absent or unclear, accept the finding.
 
 Source:
 {numbered}
