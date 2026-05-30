@@ -7,11 +7,8 @@ import { StatusBadge } from "../components/StatusBadge";
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleString(undefined, {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
+    month: "short", day: "numeric", year: "numeric",
+    hour: "2-digit", minute: "2-digit",
   });
 }
 
@@ -46,7 +43,7 @@ function CreateModal({ onClose, onCreate }: { onClose: () => void; onCreate: (p:
         <div className="modal-actions">
           <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
           <button className="btn btn-primary" onClick={submit} disabled={loading || !name.trim()}>
-            {loading ? "Creating..." : "Create"}
+            {loading ? "Creating…" : "Create"}
           </button>
         </div>
       </div>
@@ -79,19 +76,15 @@ export default function ProjectsPage() {
         </div>
 
         {loading && (
-          <p style={{ color: "var(--text-dim)", fontFamily: "var(--mono)", fontSize: 12 }}>
-            Loading...
-          </p>
+          <p style={{ color: "var(--muted)", fontFamily: "var(--mono)", fontSize: 12 }}>Loading…</p>
         )}
 
         {!loading && projects.length === 0 && (
           <div className="empty-state">
-            <div className="empty-state-icon">⬡</div>
-            <h3 style={{ color: "var(--muted)", fontFamily: "var(--head)", fontSize: 20, fontWeight: 400, letterSpacing: "-0.02em" }}>
-              No projects yet
-            </h3>
-            <p>Create a project and upload a ZIP archive to start analysis.</p>
-            <button className="btn btn-outline" style={{ marginTop: 20 }} onClick={() => setShowCreate(true)}>
+            <div className="empty-state-icon">◎</div>
+            <h3>No projects yet</h3>
+            <p>Create a project and upload a C/C++ ZIP archive to start analysis.</p>
+            <button className="btn btn-outline" style={{ marginTop: 24 }} onClick={() => setShowCreate(true)}>
               + New Project
             </button>
           </div>
@@ -110,12 +103,12 @@ export default function ProjectsPage() {
                 <span>{project.reports.length} report{project.reports.length !== 1 ? "s" : ""}</span>
               </div>
               <div className="project-card-reports">
-                {project.reports.slice(0, 3).map((r) => (
+                {project.reports.slice(0, 4).map((r) => (
                   <StatusBadge key={r.report_id} status={r.verifier_status} />
                 ))}
-                {project.reports.length > 3 && (
-                  <span style={{ fontSize: 10, color: "var(--text-dim)", alignSelf: "center" }}>
-                    +{project.reports.length - 3} more
+                {project.reports.length > 4 && (
+                  <span style={{ fontSize: 11, color: "var(--muted)", alignSelf: "center" }}>
+                    +{project.reports.length - 4}
                   </span>
                 )}
               </div>

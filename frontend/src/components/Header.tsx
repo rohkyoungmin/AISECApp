@@ -5,7 +5,7 @@ export default function Header() {
 
   return (
     <header className="header">
-      <Link to="/" className="header-logo">AISEC</Link>
+      <Link to="/" className="header-logo">Reporter</Link>
       <nav className="header-nav">
         <Link to="/projects" className={onProjects ? "active" : ""}>
           Projects

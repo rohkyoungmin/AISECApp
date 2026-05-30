@@ -11,7 +11,7 @@ from typing import Annotated
 try:
     from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
     from fastapi.middleware.cors import CORSMiddleware
-    from fastapi.responses import FileResponse, StreamingResponse
+    from fastapi.responses import FileResponse, HTMLResponse, StreamingResponse
     from fastapi.staticfiles import StaticFiles
 except ImportError as exc:
     raise RuntimeError("API dependencies are not installed. Install with `pip install -e .[api,llm]`.") from exc
@@ -39,6 +39,7 @@ app.add_middleware(
 # ── Health ────────────────────────────────────────────────────────────────────
 
 @app.get("/health")
+@app.get("/api/health")
 def health() -> dict[str, str]:
     return {"status": "ok"}
 
@@ -46,11 +47,13 @@ def health() -> dict[str, str]:
 # ── Projects ──────────────────────────────────────────────────────────────────
 
 @app.get("/projects")
+@app.get("/api/projects")
 def list_projects():
     return [asdict(p) for p in _store.list_projects()]
 
 
 @app.post("/projects", status_code=201)
+@app.post("/api/projects", status_code=201)
 async def create_project(request: Request):
     body = await request.json()
     name = str(body.get("name", "")).strip() or "Untitled Project"
@@ -59,6 +62,7 @@ async def create_project(request: Request):
 
 
 @app.get("/projects/{project_id}")
+@app.get("/api/projects/{project_id}")
 def get_project(project_id: str):
     project = _store.get_project(project_id)
     if project is None:
@@ -67,6 +71,7 @@ def get_project(project_id: str):
 
 
 @app.delete("/projects/{project_id}", status_code=204)
+@app.delete("/api/projects/{project_id}", status_code=204)
 def delete_project(project_id: str):
     if not _store.delete_project(project_id):
         raise HTTPException(status_code=404, detail="Project not found")
@@ -75,6 +80,7 @@ def delete_project(project_id: str):
 # ── Reports ───────────────────────────────────────────────────────────────────
 
 @app.get("/projects/{project_id}/reports/{report_id}")
+@app.get("/api/projects/{project_id}/reports/{report_id}")
 def get_report(project_id: str, report_id: str):
     report_path = _STORE_DIR / project_id / report_id / "report.json"
     if not report_path.exists():
@@ -83,6 +89,7 @@ def get_report(project_id: str, report_id: str):
 
 
 @app.get("/projects/{project_id}/reports/{report_id}/pdf")
+@app.get("/api/projects/{project_id}/reports/{report_id}/pdf")
 def download_pdf(project_id: str, report_id: str):
     pdf_path = _STORE_DIR / project_id / report_id / "report.pdf"
     if not pdf_path.exists():
@@ -90,13 +97,14 @@ def download_pdf(project_id: str, report_id: str):
     return FileResponse(
         pdf_path,
         media_type="application/pdf",
-        filename=f"aisec-report-{report_id}.pdf",
+        filename=f"reporter-report-{report_id}.pdf",
     )
 
 
 # ── Analysis (SSE) ────────────────────────────────────────────────────────────
 
 @app.post("/projects/{project_id}/analyze")
+@app.post("/api/projects/{project_id}/analyze")
 async def start_analysis(
     project_id: str,
     file: Annotated[UploadFile, File(description="ZIP archive containing C/C++ source files.")],
@@ -120,7 +128,10 @@ async def start_analysis(
     def run() -> None:
         try:
             emit({"type": "stage", "stage": "start", "message": "Initializing analysis engine..."})
-            analyzer = build_source_analyzer(require_llm=not allow_heuristic)
+            analyzer = build_source_analyzer(
+                require_llm=not allow_heuristic,
+                force_heuristic=allow_heuristic,
+            )
 
             if isinstance(analyzer, MultiAgentSourceAnalyzer):
                 analyzer.progress = emit
@@ -152,7 +163,39 @@ async def start_analysis(
     return {"job_id": job_id}
 
 
+@app.post("/analyze/zip")
+@app.post("/api/analyze/zip")
+async def analyze_zip_direct(
+    file: Annotated[UploadFile, File(description="ZIP archive containing C/C++ source files.")],
+    allow_heuristic: Annotated[bool, Form()] = False,
+    max_files: Annotated[int, Form()] = 20,
+):
+    content = await file.read()
+    archive_name = file.filename or "upload.zip"
+
+    try:
+        analyzer = build_source_analyzer(
+            require_llm=not allow_heuristic,
+            force_heuristic=allow_heuristic,
+        )
+        report = analyze_zip_archive(
+            archive_name=archive_name,
+            archive_bytes=content,
+            analyzer=analyzer,
+            limits=ZipAnalysisLimits(max_files=max_files),
+            enable_cve_mapping=True,
+            nvd_cache_dir=_STORE_DIR / "nvd_query_cache",
+        )
+    except LLMNotConfiguredError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=f"Analysis failed: {exc}") from exc
+
+    return report.to_dict()
+
+
 @app.get("/jobs/{job_id}/stream")
+@app.get("/api/jobs/{job_id}/stream")
 async def stream_job(job_id: str):
     job = _jobs.get(job_id)
     if job is None:
@@ -182,6 +225,7 @@ async def stream_job(job_id: str):
 
 
 @app.get("/jobs/{job_id}")
+@app.get("/api/jobs/{job_id}")
 def get_job(job_id: str):
     job = _jobs.get(job_id)
     if job is None:
@@ -189,11 +233,21 @@ def get_job(job_id: str):
     return {"job_id": job_id, "status": job["status"], "report_id": job.get("report_id")}
 
 
-# ── Static frontend ───────────────────────────────────────────────────────────
+# ── Static frontend + SPA fallback ───────────────────────────────────────────
 
 _FRONTEND_DIST = Path(__file__).parent.parent.parent / "frontend" / "dist"
+
 if _FRONTEND_DIST.exists():
-    app.mount("/", StaticFiles(directory=str(_FRONTEND_DIST), html=True), name="frontend")
+    # Serve /assets/* statically
+    _assets_dir = _FRONTEND_DIST / "assets"
+    if _assets_dir.exists():
+        app.mount("/assets", StaticFiles(directory=str(_assets_dir)), name="assets")
+
+    # SPA catch-all: every non-API GET returns index.html
+    @app.get("/{full_path:path}")
+    async def serve_spa(full_path: str):
+        index_file = _FRONTEND_DIST / "index.html"
+        return HTMLResponse(content=index_file.read_text(encoding="utf-8"))
 
 
 # ── Internal helpers ──────────────────────────────────────────────────────────

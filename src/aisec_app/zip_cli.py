@@ -21,7 +21,10 @@ def main() -> None:
 
     zip_path = resolve_zip_path(args.zip_file, Path(args.input_dir))
     try:
-        analyzer = build_source_analyzer(require_llm=not args.allow_heuristic)
+        analyzer = build_source_analyzer(
+            require_llm=not args.allow_heuristic,
+            force_heuristic=args.allow_heuristic,
+        )
         report = analyze_zip_archive(
             archive_name=zip_path.name,
             archive_bytes=zip_path.read_bytes(),

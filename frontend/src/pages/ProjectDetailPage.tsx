@@ -57,7 +57,7 @@ export default function ProjectDetailPage() {
       <div className="page">
         <Header />
         <div className="page-content" style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: 300 }}>
-          <p style={{ color: "var(--text-dim)", fontFamily: "var(--mono)", fontSize: 12 }}>Loading...</p>
+          <p style={{ color: "var(--muted)", fontFamily: "var(--mono)", fontSize: 12 }}>Loading…</p>
         </div>
       </div>
     );
@@ -69,14 +69,17 @@ export default function ProjectDetailPage() {
     <div className="page">
       <Header />
       <div className="page-content">
+        {/* Title row */}
         <div className="page-title-row">
-          <Link to="/projects" className="btn btn-ghost" style={{ padding: "6px 10px" }}>← Back</Link>
+          <Link to="/projects" className="btn btn-ghost" style={{ padding: "6px 10px", fontSize: 13 }}>
+            ← Back
+          </Link>
           <h1>{project.name}</h1>
         </div>
 
-        {/* Upload zone */}
-        <div className="glow-card" style={{ marginBottom: 32 }}>
-          <h2 style={{ fontSize: 14, marginBottom: 20, color: "var(--blue)" }}>New Analysis</h2>
+        {/* Upload card */}
+        <div className="glow-card" style={{ marginBottom: 40 }}>
+          <p className="section-heading" style={{ marginBottom: 18 }}>New Analysis</p>
 
           <div
             className={`upload-zone ${dragOver ? "drag-over" : ""}`}
@@ -85,7 +88,7 @@ export default function ProjectDetailPage() {
             onDragLeave={() => setDragOver(false)}
             onDrop={(e) => { e.preventDefault(); setDragOver(false); const f = e.dataTransfer.files[0]; if (f) handleFile(f); }}
           >
-            <div className="upload-icon">⬆</div>
+            <div className="upload-icon">ZIP</div>
             <p className="upload-label">Drop ZIP archive here or click to browse</p>
             <p className="upload-hint">C/C++ source files only · max {maxFiles} files analyzed</p>
             <input
@@ -99,49 +102,37 @@ export default function ProjectDetailPage() {
 
           {file && (
             <div className="upload-file-selected">
-              <span>📦</span>
-              <span>{file.name}</span>
-              <span style={{ color: "var(--text-dim)", marginLeft: "auto" }}>
-                {(file.size / 1024).toFixed(1)} KB
-              </span>
+              <span>ARCHIVE</span>
+              <span style={{ flex: 1 }}>{file.name}</span>
+              <span style={{ color: "var(--muted)" }}>{(file.size / 1024).toFixed(1)} KB</span>
               <button
                 className="btn btn-ghost"
                 style={{ padding: "2px 8px", fontSize: 11 }}
-                onClick={() => setFile(null)}
-              >
-                ✕
-              </button>
+                onClick={(e) => { e.stopPropagation(); setFile(null); }}
+              >✕</button>
             </div>
           )}
 
           {error && (
-            <p style={{ color: "var(--red)", fontFamily: "var(--mono)", fontSize: 11, marginTop: 8 }}>
+            <p style={{ color: "var(--red)", fontFamily: "var(--mono)", fontSize: 12, marginTop: 10 }}>
               {error}
             </p>
           )}
 
-          {/* Options */}
-          <div style={{ display: "flex", gap: 24, marginTop: 16, flexWrap: "wrap" }}>
-            <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
+          <div className="analysis-options">
+            <label className="option-label">
               <input
                 type="checkbox"
                 checked={allowHeuristic}
                 onChange={(e) => setAllowHeuristic(e.target.checked)}
-                style={{ accentColor: "var(--blue)" }}
               />
-              <span style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--text-dim)" }}>
-                Use heuristic (no API key)
-              </span>
+              Use heuristic mode (no API key)
             </label>
-
-            <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--text-dim)" }}>
-                Max files:
-              </span>
+            <label className="option-label">
+              Max files:&nbsp;
               <input
                 type="number"
-                min={1}
-                max={50}
+                min={1} max={50}
                 value={maxFiles}
                 onChange={(e) => setMaxFiles(Number(e.target.value))}
                 className="input"
@@ -156,7 +147,7 @@ export default function ProjectDetailPage() {
               disabled={!file || uploading}
               onClick={startAnalysis}
             >
-              {uploading ? "Starting..." : "Start Analysis"}
+              {uploading ? "Starting…" : "Run Analysis"}
             </button>
           </div>
         </div>
@@ -164,9 +155,7 @@ export default function ProjectDetailPage() {
         {/* Past reports */}
         {project.reports.length > 0 && (
           <>
-            <h2 style={{ fontSize: 14, color: "var(--blue)", marginBottom: 16 }}>
-              Analysis History
-            </h2>
+            <p className="section-heading">Analysis History</p>
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               {project.reports.map((r) => (
                 <Link
@@ -177,16 +166,16 @@ export default function ProjectDetailPage() {
                   <div className="glow-card" style={{ padding: "14px 18px" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
                       <StatusBadge status={r.verifier_status} />
-                      <span style={{ fontFamily: "var(--mono)", fontSize: 12, color: "var(--text)" }}>
+                      <span style={{ fontFamily: "var(--mono)", fontSize: 13, color: "var(--ink)", fontWeight: 500 }}>
                         {r.archive_name}
                       </span>
-                      <span style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--text-dim)", marginLeft: "auto" }}>
+                      <span style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--muted)", marginLeft: "auto" }}>
                         {formatDate(r.created_at)}
                       </span>
                     </div>
-                    <div style={{ display: "flex", gap: 20, marginTop: 8, fontFamily: "var(--mono)", fontSize: 11, color: "var(--text-dim)" }}>
+                    <div style={{ display: "flex", gap: 20, marginTop: 8, fontFamily: "var(--mono)", fontSize: 11, color: "var(--muted)" }}>
                       <span>{r.analyzed_files} files</span>
-                      <span style={{ color: r.total_findings > 0 ? "var(--red)" : "var(--text-dim)" }}>
+                      <span style={{ color: r.total_findings > 0 ? "var(--red)" : "var(--muted)" }}>
                         {r.total_findings} finding{r.total_findings !== 1 ? "s" : ""}
                       </span>
                     </div>

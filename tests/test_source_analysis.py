@@ -154,6 +154,19 @@ class SourceAnalysisTests(unittest.TestCase):
             else:
                 os.environ.pop("ANTHROPIC_API_KEY", None)
 
+    def test_build_source_analyzer_can_force_heuristic_even_with_key(self) -> None:
+        old_key = os.environ.get("ANTHROPIC_API_KEY")
+        os.environ["ANTHROPIC_API_KEY"] = "sk-ant-test-key"
+        try:
+            analyzer = build_source_analyzer(require_llm=False, force_heuristic=True)
+        finally:
+            if old_key is not None:
+                os.environ["ANTHROPIC_API_KEY"] = old_key
+            else:
+                os.environ.pop("ANTHROPIC_API_KEY", None)
+
+        self.assertIsInstance(analyzer, HeuristicSourceAnalyzer)
+
     def test_source_cli_heuristic_mode(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             source_path = Path(tmp) / "sample.c"

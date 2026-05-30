@@ -1,6 +1,6 @@
 import type { Project, ProjectReport } from "./types";
 
-const BASE = "";
+const BASE = "/api";
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(BASE + path, options);

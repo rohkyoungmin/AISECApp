@@ -25,7 +25,10 @@ def main() -> None:
     )
 
     try:
-        analyzer = build_source_analyzer(require_llm=not args.allow_heuristic)
+        analyzer = build_source_analyzer(
+            require_llm=not args.allow_heuristic,
+            force_heuristic=args.allow_heuristic,
+        )
         report = analyzer.analyze(artifact)
     except LLMNotConfiguredError as exc:
         raise SystemExit(str(exc)) from exc
